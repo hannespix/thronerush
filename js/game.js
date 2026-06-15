@@ -3480,7 +3480,7 @@
     setTimeout(()=>{ spawnGibs(x,rand(H*0.08,H*0.26),ri(28,40),V.cols,rand(440,520),540); deathFlash=Math.max(deathFlash,0.45); },ri(200,260));
     setTimeout(()=>{ for(let k=0;k<4;k++) spawnGibs(rand(W*0.15,W*0.85),rand(-30,H*0.18),ri(14,20),V.cols,rand(380,440),560); },ri(460,560)); }
   // ---------- Anonyme Telemetrie (Balancing/Tuning) – kein PII; lokales Log immer, Cloud-Versand nur opt-in + URL gesetzt ----------
-  const GAME_VER='v372';   // mit der service-worker-CACHE-Version synchron halten (taucht in der Telemetrie als `ver` auf)
+  const GAME_VER='v373';   // mit der service-worker-CACHE-Version synchron halten (taucht in der Telemetrie als `ver` auf)
   const TELEMETRY_URL='https://thronerush-telemetry.hannes-75b.workers.dev/';   // Cloudflare-Worker → D1. Versand greift nur bei Opt-in (Einwilligungsabfrage beim Start). Siehe telemetry-worker/README.md.
   function telemetryCid(){ try{ let c=localStorage.getItem('thronerush_cid'); if(!c){ c=Date.now().toString(36)+Math.random().toString(36).slice(2,10); localStorage.setItem('thronerush_cid',c); } return c; }catch(e){ return 'anon'; } }
   function runRecord(earned){
@@ -4716,6 +4716,7 @@
     const nc=g('nickCancelBtn'); if(nc) nc.addEventListener('click',nickCancel);
     const ni=g('nickInput'); if(ni) ni.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); nickConfirm(); } else if(e.key==='Escape'){ e.preventDefault(); nickCancel(); } }); }
   applyI18n(); updateMenuChips();
+  { const cr=document.querySelector('.credit'); if(cr) cr.textContent='THRONERUSH '+GAME_VER; }   // Versions-Anzeige immer synchron zu GAME_VER (nie wieder stale)
   // Erst-Run-Onboarding: einmalige "So geht's"-Karte über dem Menü
   function closeHowto(){ const h=document.getElementById('howto'); if(h) h.classList.add('hidden'); meta.seen=meta.seen||{}; meta.seen.howto=1; saveMeta(); }
   { const hb=document.getElementById('howtoBtn'); if(hb) hb.addEventListener('click',()=>{ closeHowto(); beep(740,0.08,'square',0.25); startGame('normal'); }); }   // „LOS!" startet direkt einen Arcade-Run (kein Sackgassen-Menü mehr)
