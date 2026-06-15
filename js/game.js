@@ -24,7 +24,7 @@
   function P(k){ const o=TR[lang]||TR.en; return o[k]||TR.en[k]||[]; }   // lokalisierter Pool
   const TR={
     de:{
-      tag:'Jede Sitzung ein Highscore', daily:'🗓 TÄGLICHE CHALLENGE', workshop:'WERKSTATT', settings:'⚙️ EINSTELLUNGEN',
+      tag:'Jede Sitzung ein Highscore', daily:'🗓 TÄGLICHE CHALLENGE', playBtn:'▶ SPIEL STARTEN', workshop:'WERKSTATT', settings:'⚙️ EINSTELLUNGEN',
       howTitle:'BEREIT?', howGo:'LOS!', howDodge:'Weiche aus & bleib in Bewegung', howDodgeD:'Münzen, Combos & der Rest erklären sich ganz von selbst beim Spielen. 🎮',
       tipSP:'💠 Skillpunkt!', tipSPd:'Werkstatt 🛠️ unten öffnen & aufrüsten', tipSyn:'🔗 Fusion möglich!', tipSynd:'Werkstatt → „Synergien": 2 Waffen verschmelzen', tipNear:'✦ Knapp!', tipNeard:'Near-Miss = Combo & mehr Coins', tipCurse:'🎲 Fluch', tipCursed:'Riskant, mehr Punkte – läuft ab', coach_move:'🕹️ Bewegen', coach_moved:'Dein leuchtender Kern folgt Maus oder Finger. Lenk ihn ruhig durch die Lücken zwischen den Hindernissen.', coach_near:'✦ Near-Miss', coach_neard:'Ganz knapp an Gegnern vorbei = deine Combo steigt & es regnet mehr Münzen. Risiko lohnt sich!', coach_combo:'🔥 Combo-Faktor', coach_combod:'Jede 4. Combo-Stufe hebt deinen Punkte-Multiplikator. Bleib in Bewegung – ein Treffer setzt ihn zurück.', coach_beat:'🎵 Im Takt', coach_beatd:'Weich genau im Beat der Musik aus → „IM TAKT!": Extra-Combo, mehr Punkte und dein HYPE füllt schneller.', coach_coin:'🪙 Münzen', coach_coind:'Münzen sind deine Währung. In der Werkstatt 🛠️ kaufst du dauerhafte Upgrades – auch zwischen den Runs.', coach_jump:'🦘 Sprung', coach_jumpd:'Tippe dein Schiff an → spring über Gefahr hinweg und entkomme. Lädt danach automatisch nach.', coach_hype:'🌈 HYPE-Meter', coach_hyped:'Near-Misses füllen den Balken oben. Ist er voll → HYPE: Score ×2, Münz-Magnet & Regenbogen-Trail.', coach_letter:'🔤 BEUTE', coach_letterd:'Sammle die Buchstaben der Reihe nach ein. Wort komplett = fette Beute-Belohnung!', coach_sp:'💠 Skillpunkt', coach_spd:'Öffne die Werkstatt 🛠️ unten und schalte im Fähigkeitsbaum neue Waffen & Kräfte frei.', coach_shield:'🛡️ Schild', coach_shieldd:'Der Ring um dein Schiff fängt genau einen Treffer ab. Danach ist er weg – hol dir Nachschub.', coach_syn:'🔗 Synergie', coach_synd:'Zwei Waffen lassen sich in der Werkstatt verschmelzen → neuer Effekt + ÜBERLADUNG. Probier es aus!', coach_loot:'✦ Relikte', coach_lootd:'Zerstörte Gegner lassen ✦-Relikte fallen. Einsammeln = sofort stärker (Schaden, Krit, Münzen …). Je seltener die Farbe, desto krasser.', coach_wcrate:'🔫 Arsenal-Kiste', coach_wcrated:'Quadratische Kisten droppen Waffen. Freier Slot → neue Waffe gratis (auch noch nicht gekaufte!). Sonst gibt’s einen Skillpunkt.', coach_chest:'📦 Beute-Truhe', coach_chestd:'Die goldene Truhe schwebt durchs Feld. Riskier den Weg hin → beim Öffnen platzt eine Loot-Explosion + Münzen.',
       how:'Maus oder <b>Finger</b> · knapp vorbei = <b>Near-Miss-Bonus</b> · 🛡 sammeln · <b>ESC</b> = Menü', install:'📲 App installieren',
@@ -53,7 +53,7 @@
       crazy:["weiche aus · sammle · überlebe","probier nicht zu sterben (du wirst)","100% chiptune, 0% gnade","heute schon explodiert?","no cap, das wird mid","reflexe verkauft? hier zurückholen"]
     },
     en:{
-      tag:'Every sitting a highscore', daily:'🗓 DAILY CHALLENGE', workshop:'WORKSHOP', settings:'⚙️ SETTINGS',
+      tag:'Every sitting a highscore', daily:'🗓 DAILY CHALLENGE', playBtn:'▶ START GAME', workshop:'WORKSHOP', settings:'⚙️ SETTINGS',
       howTitle:'READY?', howGo:'GO!', howDodge:'Dodge & keep moving', howDodgeD:'Coins, combos & everything else explain themselves as you play. 🎮',
       tipSP:'💠 Skill point!', tipSPd:'Open the Workshop 🛠️ below to gear up', tipSyn:'🔗 Fusion ready!', tipSynd:'Workshop → “Synergies”: fuse two weapons', tipNear:'✦ Close!', tipNeard:'Near-miss = combo & more coins', tipCurse:'🎲 Curse', tipCursed:'Risky, more points – wears off', coach_move:'🕹️ Move', coach_moved:'Your glowing core follows your mouse or finger. Steer it calmly through the gaps between obstacles.', coach_near:'✦ Near-Miss', coach_neard:'Skim right past enemies = your combo climbs & more coins drop. Risk pays off!', coach_combo:'🔥 Combo Multiplier', coach_combod:'Every 4th combo step raises your score multiplier. Keep moving – one hit resets it.', coach_beat:'🎵 On Beat', coach_beatd:'Dodge right on the music’s beat → "ON BEAT!": bonus combo, more points and faster HYPE.', coach_coin:'🪙 Coins', coach_coind:'Coins are your currency. In the Workshop 🛠️ you buy permanent upgrades – even between runs.', coach_jump:'🦘 Jump', coach_jumpd:'Tap your ship → leap over danger and escape. It recharges automatically afterwards.', coach_hype:'🌈 HYPE Meter', coach_hyped:'Near-misses fill the bar up top. When full → HYPE: score ×2, coin magnet & rainbow trail.', coach_letter:'🔤 BONUS', coach_letterd:'Collect the letters in order. Complete the word = big bonus reward!', coach_sp:'💠 Skill Point', coach_spd:'Open the Workshop 🛠️ below and unlock new weapons & powers in the skill tree.', coach_shield:'🛡️ Shield', coach_shieldd:'The ring around your ship blocks exactly one hit. Then it’s gone – grab more.', coach_syn:'🔗 Synergy', coach_synd:'Fuse two weapons in the Workshop → new effect + OVERLOAD. Give it a try!', coach_loot:'✦ Relics', coach_lootd:'Smashed enemies drop ✦ relics. Grab them = instantly stronger (damage, crit, coins …). Rarer color = bigger boost.', coach_wcrate:'🔫 Arsenal Crate', coach_wcrated:'Square crates drop weapons. Free slot → a new weapon for free (even unpurchased ones!). Otherwise a skill point.', coach_chest:'📦 Loot Vault', coach_chestd:'The golden vault drifts across the field. Risk the trip → opening it bursts a loot explosion + coins.',
       how:'Mouse or <b>finger</b> · barely dodge = <b>near-miss bonus</b> · grab 🛡 · <b>ESC</b> = menu', install:'📲 Install app',
@@ -82,7 +82,7 @@
       crazy:["dodge · collect · survive","try not to die (you will)","100% chiptune, 0% mercy","exploded yet today?","no cap, this'll be mid","sold your reflexes? get 'em back here"]
     },
     fr:{
-      tag:'Chaque séance un highscore', daily:'🗓 DÉFI DU JOUR', workshop:'ATELIER', settings:'⚙️ RÉGLAGES',
+      tag:'Chaque séance un highscore', daily:'🗓 DÉFI DU JOUR', playBtn:'▶ JOUER', workshop:'ATELIER', settings:'⚙️ RÉGLAGES',
       howTitle:'PRÊT ?', howGo:'C’EST PARTI !', howDodge:'Esquive & reste mobile', howDodgeD:'Pièces, combos & le reste s’expliquent tout seuls en jouant. 🎮',
       tipSP:'💠 Point de skill !', tipSPd:'Ouvre l’Atelier 🛠️ en bas pour t’équiper', tipSyn:'🔗 Fusion possible !', tipSynd:'Atelier → « Synergies » : fusionne deux armes', tipNear:'✦ Juste !', tipNeard:'Near-miss = combo & plus de coins', tipCurse:'🎲 Malédiction', tipCursed:'Risqué, plus de points – temporaire', coach_move:'🕹️ Bouger', coach_moved:'Ton noyau lumineux suit la souris ou le doigt. Faufile-le tranquillement dans les trous entre les obstacles.', coach_near:'✦ Near-Miss', coach_neard:'Frôle les ennemis = ton combo grimpe & plus de pièces tombent. Le risque paie !', coach_combo:'🔥 Multiplicateur', coach_combod:'Chaque 4e palier de combo augmente ton multiplicateur. Reste mobile – un coup le remet à zéro.', coach_beat:'🎵 Dans le rythme', coach_beatd:'Esquive pile sur le beat → « EN RYTHME » : combo bonus, plus de points et HYPE plus vite.', coach_coin:'🪙 Pièces', coach_coind:'Les pièces sont ta monnaie. À l’Atelier 🛠️ tu achètes des améliorations permanentes – même entre les parties.', coach_jump:'🦘 Saut', coach_jumpd:'Touche ton vaisseau → saute par-dessus le danger et échappe-toi. Il se recharge ensuite tout seul.', coach_hype:'🌈 Jauge HYPE', coach_hyped:'Les near-miss remplissent la barre en haut. Pleine → HYPE : score ×2, aimant à pièces & traînée arc-en-ciel.', coach_letter:'🔤 BUTIN', coach_letterd:'Ramasse les lettres dans l’ordre. Mot complet = grosse récompense !', coach_sp:'💠 Point de skill', coach_spd:'Ouvre l’Atelier 🛠️ en bas et débloque de nouvelles armes & pouvoirs dans l’arbre.', coach_shield:'🛡️ Bouclier', coach_shieldd:'L’anneau autour de ton vaisseau bloque un seul coup. Ensuite il disparaît – reprends-en.', coach_syn:'🔗 Synergie', coach_synd:'Fusionne deux armes à l’Atelier → nouvel effet + SURCHARGE. Essaie !', coach_loot:'✦ Reliques', coach_lootd:'Les ennemis détruits lâchent des reliques ✦. Les ramasser = plus fort direct (dégâts, crit, pièces …). Couleur plus rare = boost plus gros.', coach_wcrate:'🔫 Caisse d’arsenal', coach_wcrated:'Les caisses carrées lâchent des armes. Slot libre → une nouvelle arme gratuite (même non achetée !). Sinon un point de skill.', coach_chest:'📦 Coffre à butin', coach_chestd:'Le coffre doré dérive sur le terrain. Risque le trajet → l’ouvrir déclenche une explosion de butin + des pièces.',
       how:'Souris ou <b>doigt</b> · frôler = <b>bonus near-miss</b> · choper 🛡 · <b>ESC</b> = menu', install:'📲 Installer l’appli',
@@ -3477,7 +3477,7 @@
     setTimeout(()=>{ spawnGibs(x,rand(H*0.08,H*0.26),ri(28,40),V.cols,rand(440,520),540); deathFlash=Math.max(deathFlash,0.45); },ri(200,260));
     setTimeout(()=>{ for(let k=0;k<4;k++) spawnGibs(rand(W*0.15,W*0.85),rand(-30,H*0.18),ri(14,20),V.cols,rand(380,440),560); },ri(460,560)); }
   // ---------- Anonyme Telemetrie (Balancing/Tuning) – kein PII; lokales Log immer, Cloud-Versand nur opt-in + URL gesetzt ----------
-  const GAME_VER='v369';   // mit der service-worker-CACHE-Version synchron halten (taucht in der Telemetrie als `ver` auf)
+  const GAME_VER='v370';   // mit der service-worker-CACHE-Version synchron halten (taucht in der Telemetrie als `ver` auf)
   const TELEMETRY_URL='https://thronerush-telemetry.hannes-75b.workers.dev/';   // Cloudflare-Worker → D1. Versand greift nur bei Opt-in (Einwilligungsabfrage beim Start). Siehe telemetry-worker/README.md.
   function telemetryCid(){ try{ let c=localStorage.getItem('thronerush_cid'); if(!c){ c=Date.now().toString(36)+Math.random().toString(36).slice(2,10); localStorage.setItem('thronerush_cid',c); } return c; }catch(e){ return 'anon'; } }
   function runRecord(earned){
@@ -3545,13 +3545,12 @@
     if(!getNick()) askNick(ok=>{ if(ok) go(); }); else go(); }
 
   // --- Leaderboard-Ansicht ---
-  function openLeaderboard(from){ lbReturn=from||'start';
+  function openLeaderboard(from){ lbReturn=from||'start'; lbTab='normal';   // nur noch ein Modus → ein globales Board (keine Tabs)
     const fr=document.getElementById(lbReturn); if(fr) fr.classList.add('hidden');
-    if(lastRunLB&&lastRunLB.daily) lbTab='daily';
     document.getElementById('lbTitleEl').textContent=t('lbTitle');
     document.getElementById('lbBackBtn').textContent=t('lbBack');
     document.getElementById('leaderboard').classList.remove('hidden');
-    renderLbTabs(); loadLbBoard(); updateLbBest(); try{ beep(660,0.06,'square',0.2);}catch(e){} }
+    loadLbBoard(); updateLbBest(); try{ beep(660,0.06,'square',0.2);}catch(e){} }
   function closeLeaderboard(){ document.getElementById('leaderboard').classList.add('hidden');
     const fr=document.getElementById(lbReturn||'start'); if(fr) fr.classList.remove('hidden'); }
   function renderLbTabs(){ const host=document.getElementById('lbTabs'); if(!host) return;
@@ -4249,8 +4248,7 @@
     const sp=document.getElementById('achStats');
     if(sp){ const rows=[['runs','🎮',statN('runs')],['orbs','🪙',statN('orbs')],['near','😎',statN('near')],['perfect','🎯',statN('perfect')],['bosses','🛸',statN('bosses')],['maxCombo','🔗','x'+statN('maxCombo')],['maxBoss','🌊',statN('maxBoss')],['chipsTotal','🪙',fmt(statN('chipsTotal'))],['won','🏆',meta.won||0]];
       const hs=(ico,label,v)=>'<div class="sttile hs"><span class="i">'+ico+'</span><b>'+fmt(v||0)+'</b><span class="l">'+label+'</span></div>';
-      let hsTiles=hs('🕹️',modeLabel('normal'),best&&best.normal)+hs('⚡',modeLabel('hardcore'),best&&best.hardcore);
-      if(best&&best.daily) hsTiles+=hs('🗓️',t('modeDaily'),best.daily);
+      let hsTiles=hs('🏆',t('hiscores'),best&&best.normal);   // nur ein Modus → ein Bestwert
       sp.innerHTML='<div class="stHead">🏆 '+t('hiscores')+'</div><div class="stGrid">'+hsTiles+'</div>'
         +'<div class="stHead">'+stTxt('stats')+'</div><div class="stGrid">'+rows.map(r=>'<div class="sttile"><span class="i">'+r[1]+'</span><b>'+(typeof r[2]==='number'?fmt(r[2]):r[2])+'</b><span class="l">'+stTxt(r[0])+'</span></div>').join('')+'</div>'; }
     const mst=document.getElementById('msTitle'); if(mst){ const done=MILESTONES.filter(m=>meta.ms&&meta.ms[m.id]).length; mst.textContent=t('msTitle')+' · '+done+'/'+MILESTONES.length; }
@@ -4460,7 +4458,7 @@
     const set=(id,v,html)=>{ const e=document.getElementById(id); if(e){ if(html) e.innerHTML=v; else e.textContent=v; } };
     const setSel=(sel,v,html)=>{ const e=document.querySelector(sel); if(e){ if(html) e.innerHTML=v; else e.textContent=v; } };
     const setIco=(id,ico,lbl,short)=>{ const e=document.getElementById(id); if(e){ const i=e.querySelector('.ico'); if(i) i.textContent=ico; else e.textContent=ico; const l=e.querySelector('.iconLbl'); if(l&&short!=null) l.textContent=short; e.title=lbl; } };
-    set('titleTag',t('tag')); set('dailyBtn',t('daily')); set('shopLbl',t('hangar'));
+    set('titleTag',t('tag')); set('playBtn',t('playBtn')); set('shopLbl',t('hangar'));
     set('howTitle',t('howTitle')); set('howtoBtn',t('howGo')); set('howDodge',t('howDodge')); set('howDodgeD',t('howDodgeD'));
     setIco('achBtn','🏅',t('achBtn'),t('il_ach')); setIco('settingsBtn','⚙️',t('settings'),t('il_set')); setIco('shipBtn','🎨',t('shipDesigner'),t('il_ship')); setIco('statusBtn','📊',t('statusBtn'),t('il_status'));
     { const cl=document.querySelector('#coinBtn .iconLbl'); if(cl) cl.textContent=t('il_coin'); }
@@ -4526,7 +4524,7 @@
     // Kettenblitz: vom Titel zum nächstgelegenen Button, dann von Button zu Button weiterspringen (wie im Spiel)
     // – unregelmäßige, etwas langsamere Abstände; der einschlagende Blitz triggert synchron den Titel-Glitch
     mfxChainT-=dt; if(mfxChainT<=0){ mfxChainT=1.7+Math.random()*1.6+(Math.random()<0.4?Math.random()*2.4:0);   // unregelmäßig + minimal langsamer
-      let pool=[...s.querySelectorAll('.mode, #dailyBtn, #shopBtn, .iconRow button, .diffBtn')].filter(e=>e.offsetParent!==null).map(el=>({el,c:mfxRect(s,el)}));
+      let pool=[...s.querySelectorAll('#playBtn, #shopBtn, .iconRow button, .diffBtn')].filter(e=>e.offsetParent!==null).map(el=>({el,c:mfxRect(s,el)}));
       if(pool.length){ const col=MFX_COLS[(Math.random()*MFX_COLS.length)|0]; let prev=anchor||pool[0].c; const hops=Math.min(pool.length,3+(Math.random()*3|0));
         if(lg){ lg.classList.remove('glitch'); void lg.offsetWidth; lg.classList.add('glitch'); }   // Titel-Glitch synchron zum Blitz
         for(let h=0;h<hops;h++){ let bi=0,bd=1e18; for(let k=0;k<pool.length;k++){ const d=(pool[k].c.x-prev.x)**2+(pool[k].c.y-prev.y)**2; if(d<bd){bd=d;bi=k;} }
@@ -4652,8 +4650,7 @@
   { const db=document.getElementById('diffBtn'); if(db){ updateDiffLabel();
     db.addEventListener('click',()=>{ meta.diff=((meta.diff||0)+1)%DIFFS.length; saveMeta(); updateDiffLabel(); sfxPow(); vibe(8); }); }
     const dib=document.getElementById('diffInfoBtn'); if(dib) dib.addEventListener('click',()=>{ const di=document.getElementById('diffInfo'); if(di){ const open=di.classList.toggle('open'); dib.classList.toggle('on',open); } }); }
-  document.querySelectorAll('.mode').forEach(c=>c.addEventListener('click',e=>{ if(e.target.closest('.infoBtn')) return; startGame(c.dataset.mode); }));
-  document.getElementById('dailyBtn').addEventListener('click',()=>startGame('daily'));
+  { const pb=document.getElementById('playBtn'); if(pb) pb.addEventListener('click',()=>startGame('normal')); }   // nur ein Modus
   document.getElementById('shopBtn').addEventListener('click',()=>openArsenalView('loadout'));   // Menü → Hangar (kaufen + ausrüsten + wechseln, mit Coins)
   document.getElementById('overShopBtn').addEventListener('click',()=>openArsenalView('shop'));   // Over → der EINE Hub (Werkstatt-Tab)
   document.getElementById('shopBackBtn').addEventListener('click',closeShop);
