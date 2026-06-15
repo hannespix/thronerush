@@ -448,7 +448,7 @@
     const eat=ev=>{ ev.stopPropagation(); ev.preventDefault(); };
     window.addEventListener('click',eat,{capture:true,once:true});
     setTimeout(()=>{ try{ window.removeEventListener('click',eat,{capture:true}); }catch(_){} },500);
-    state=loreReturn; if(loreReturn===S.PLAY) lastT=performance.now(); try{ beep(440,0.06,'square',0.16); }catch(_){} }
+    state=loreReturn; if(loreReturn===S.PLAY){ lastT=performance.now(); if(player){ tgt.x=player.x; tgt.y=player.y; } inputSuppressUntil=performance.now()+320; } try{ beep(440,0.06,'square',0.16); }catch(_){} }   // Click-Through-Schutz: Schiff bleibt stehen
   let elapsed, spawnT, orbT, powerupT, coinT, difficulty, shake, flash, flashColor, nearGlow, nearCount, deathFlash=0;
   let deathT=0, deathX=0, deathY=0, deathGather=false, deathGlow='#ff7a1a', deathMsg='', overShown=false;   // Abgang: Timer + Loser-Materialisierung + Spott-Nachricht; overShown = Over-Panel sichtbar
   let lastBossName='', lastRunRecord=false;   // für die teilbare Game-Over-Karte: zuletzt getroffener Meme-Boss + Rekord-Flag
@@ -899,8 +899,9 @@
   function applyFx(){ const w=document.getElementById('wrap'); if(w) w.classList.toggle('crt',!!opt.fx); }   // CRT-Scanlines an/aus (CSS, koppelt an „Effekte")
   applyFx();
   const tgt={x:W/2,y:H*0.72};
+  let inputSuppressUntil=0;   // kurzes Fenster nach Karten-Schließen: Steuer-/Sprung-Input ignorieren, damit der Dismiss-Tap das Schiff nicht zur Button-Position zieht
   function setT(x,y){ if(mods&&(mods.invertX||(mods.mirror&&mirrorOn))) x=W-x; tgt.x=x; tgt.y=y; inputDirty=true; }   // Spiegelwelt-Fluch (getaktet) · inputDirty = Eingabe-Signal für Passivitäts-Metrik
-  function onMove(e){ if(coachPause) return; const r=canvas.getBoundingClientRect();
+  function onMove(e){ if(coachPause||performance.now()<inputSuppressUntil) return; const r=canvas.getBoundingClientRect();
     if(e.touches&&e.touches[0]) setT(e.touches[0].clientX-r.left,e.touches[0].clientY-r.top); else setT(e.clientX-r.left,e.clientY-r.top); }
   canvas.addEventListener('mousemove',onMove);
   canvas.addEventListener('touchstart',e=>{onMove(e);e.preventDefault();},{passive:false});
@@ -911,7 +912,7 @@
   canvas.addEventListener('pointermove',e=>{ if(tapOK&&(Math.abs(e.clientX-tapSX)>14||Math.abs(e.clientY-tapSY)>14)) tapOK=false; });
   canvas.addEventListener('pointerup',e=>{ if(coachPause){ const r=canvas.getBoundingClientRect(), lx=e.clientX-r.left, ly=e.clientY-r.top;
       if(coachBtn && lx>=coachBtn.x && lx<=coachBtn.x+coachBtn.w && ly>=coachBtn.y && ly<=coachBtn.y+coachBtn.h) resumeCoach();   // nur der WEITER-Button schließt die Tutorial-Karte (kein versehentliches Wegtippen)
-      tapOK=false; return; } if(tapOK&&performance.now()-tapT<=300&&state===S.PLAY) tryJump(); tapOK=false; });
+      tapOK=false; return; } if(tapOK&&performance.now()-tapT<=300&&state===S.PLAY&&performance.now()>=inputSuppressUntil) tryJump(); tapOK=false; });
   canvas.addEventListener('pointercancel',()=>{ tapOK=false; });
   window.addEventListener('keydown',e=>{ if(coachPause&&(e.code==='Space'||e.code==='Enter')){ resumeCoach(); e.preventDefault(); } });   // Desktop: Leertaste/Enter → weiter
 
@@ -978,7 +979,9 @@
     }
   }
   function coachFreezeTick(dt){ if(coachCard && coachCard.app<1) coachCard.app=Math.min(1,coachCard.app+dt/0.28); }   // im Freeze nur die Karte einblenden
-  function resumeCoach(){ if(!coachPause) return; coachPause=false; coachBtn=null; if(coachCard) coachCard.closing=true; coachCd=2.6; invuln=Math.max(invuln||0,0.6); try{ beep(720,0.06,'square',0.2); }catch(_){ } }   // WEITER-Button → weiter, kurze Unverwundbarkeit zum Schutz
+  function resumeCoach(){ if(!coachPause) return; coachPause=false; coachBtn=null; if(coachCard) coachCard.closing=true; coachCd=2.6; invuln=Math.max(invuln||0,0.6);
+    if(player){ tgt.x=player.x; tgt.y=player.y; } inputSuppressUntil=performance.now()+320;   // Schiff bleibt stehen: Ziel aufs Schiff snappen + Eingabe kurz sperren → kein Sprung zur Button-Position (Click-Through-Fix)
+    try{ beep(720,0.06,'square',0.2); }catch(_){ } }   // WEITER-Button → weiter, kurze Unverwundbarkeit zum Schutz
   // Schadenszahl (weiß = normal, rot = Krit). Mit Soft-Cap gegen Spam & nur wenn aktiviert.
   function floatDamage(x,y,amt,crit){ if(!opt.dmg||floaters.length>66) return; const a=Math.round(amt); if(a<=0) return;
     floaters.push({x:x+rand(-5,5),y,text:crit?(a+'!'):''+a,color:crit?'#ff3b3b':'#ffffff',size:crit?20:13,life:1,vy:-58,vx:rand(-14,14),dr:crit?1.25:1.8}); }
@@ -3477,7 +3480,7 @@
     setTimeout(()=>{ spawnGibs(x,rand(H*0.08,H*0.26),ri(28,40),V.cols,rand(440,520),540); deathFlash=Math.max(deathFlash,0.45); },ri(200,260));
     setTimeout(()=>{ for(let k=0;k<4;k++) spawnGibs(rand(W*0.15,W*0.85),rand(-30,H*0.18),ri(14,20),V.cols,rand(380,440),560); },ri(460,560)); }
   // ---------- Anonyme Telemetrie (Balancing/Tuning) – kein PII; lokales Log immer, Cloud-Versand nur opt-in + URL gesetzt ----------
-  const GAME_VER='v371';   // mit der service-worker-CACHE-Version synchron halten (taucht in der Telemetrie als `ver` auf)
+  const GAME_VER='v372';   // mit der service-worker-CACHE-Version synchron halten (taucht in der Telemetrie als `ver` auf)
   const TELEMETRY_URL='https://thronerush-telemetry.hannes-75b.workers.dev/';   // Cloudflare-Worker → D1. Versand greift nur bei Opt-in (Einwilligungsabfrage beim Start). Siehe telemetry-worker/README.md.
   function telemetryCid(){ try{ let c=localStorage.getItem('thronerush_cid'); if(!c){ c=Date.now().toString(36)+Math.random().toString(36).slice(2,10); localStorage.setItem('thronerush_cid',c); } return c; }catch(e){ return 'anon'; } }
   function runRecord(earned){
