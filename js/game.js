@@ -3477,7 +3477,7 @@
     setTimeout(()=>{ spawnGibs(x,rand(H*0.08,H*0.26),ri(28,40),V.cols,rand(440,520),540); deathFlash=Math.max(deathFlash,0.45); },ri(200,260));
     setTimeout(()=>{ for(let k=0;k<4;k++) spawnGibs(rand(W*0.15,W*0.85),rand(-30,H*0.18),ri(14,20),V.cols,rand(380,440),560); },ri(460,560)); }
   // ---------- Anonyme Telemetrie (Balancing/Tuning) – kein PII; lokales Log immer, Cloud-Versand nur opt-in + URL gesetzt ----------
-  const GAME_VER='v370';   // mit der service-worker-CACHE-Version synchron halten (taucht in der Telemetrie als `ver` auf)
+  const GAME_VER='v371';   // mit der service-worker-CACHE-Version synchron halten (taucht in der Telemetrie als `ver` auf)
   const TELEMETRY_URL='https://thronerush-telemetry.hannes-75b.workers.dev/';   // Cloudflare-Worker → D1. Versand greift nur bei Opt-in (Einwilligungsabfrage beim Start). Siehe telemetry-worker/README.md.
   function telemetryCid(){ try{ let c=localStorage.getItem('thronerush_cid'); if(!c){ c=Date.now().toString(36)+Math.random().toString(36).slice(2,10); localStorage.setItem('thronerush_cid',c); } return c; }catch(e){ return 'anon'; } }
   function runRecord(earned){
@@ -3807,7 +3807,7 @@
   function buyMeta(id,rerender){ const m=META.find(x=>x.id===id); if(!m) return; const lvl=metaLvl(id);
     if(lvl>=m.max) return; const cost=metaCost(m,lvl); if(coinShort(cost)) return;
     meta.chips-=cost; meta.lvl=meta.lvl||{}; meta.lvl[id]=lvl+1; applyResearchUnlock(id); saveMeta();   // SOFORT-KAUF: kein Research-Timer/Queue mehr (weniger Reibung)
-    sfxUpgrade(); vibe([15,20,15]); updateMenuChips(); (rerender||renderShop)();
+    sfxUpgrade(); vibe([15,20,15]); updateAllBalances(); (rerender||renderShop)();   // updateAllBalances → auch der Hub-Coin-Chip (#arCoin) bleibt nach dem Kauf aktuell
   }
 
   // ---------- Arsenal-Ansicht (In-Run, über Pause: Build ansehen, Waffe ablegen) ----------
@@ -3917,11 +3917,11 @@
         b.addEventListener('click',()=>{ arsenalTab=k; renderArsenalView(); }); arTabs.appendChild(b); }); }
     const show=(id,on)=>{ const e=document.getElementById(id); if(e) e.classList.toggle('hidden',!on); };
     show('arSecLoadout',arsenalTab==='loadout'); show('arSecSyn',arsenalTab==='syn'); show('arSecShop',arsenalTab==='shop');
+    { const ac=document.getElementById('arCoin'); if(ac) ac.textContent='🪙 '+fmt(meta.chips||0); }   // EINE klickbare Coin-Anzeige im Hub-Header (gleiche Stelle auf allen Tabs)
     if(arsenalTab==='shop'){ setShopHost('arsenal'); renderShop(); const bb0=document.getElementById('arsenalBackBtn'); if(bb0) bb0.textContent=t('back'); return; }
     updateRunShopBtns(); const sub=document.getElementById('arsenalViewSub');
     if(sub){ sub.innerHTML='<span class="rp" title="'+t('slotsLbl')+'">🎒 '+ownedCount()+'/'+arsenal.slots+'</span>'
-      +'<span class="rp" title="'+t('skillPts')+'">💠 '+skillPts+'</span>'
-      +'<span class="rp coin" title="'+t('balance')+'">🪙 '+fmt(meta.chips||0)+'</span>'; }
+      +'<span class="rp" title="'+t('skillPts')+'">💠 '+skillPts+'</span>'; }   // Coins stehen jetzt zentral im Header-Chip (#arCoin) – nicht mehr doppelt hier
     const bsp=document.getElementById('arBuySpBtn');
     if(bsp){ bsp.classList.add('hidden'); }   // Anti-P2W: Skillpunkte sind NICHT mehr mit Münzen kaufbar (nur erspielt: Bosse/Drops)
     const skb=document.getElementById('arStartKitBtn');
@@ -4056,7 +4056,7 @@
     fr:['L’argent n’a pas d’odeur, le néon brille.','Le capitalisme – mais en rose.','N’économise pas, dépense !','Deviens riche en dormant. Ou ici.','Plus de coins = plus de boum. Science.','Ta tirelire a déjà peur.','Investis dans les pixels. Anticrise.','De l’argent réel ? Bientôt. D’abord les codes.']
   };
   let coinReturn='start';
-  function updateAllBalances(){ const bal='🪙 '+(meta.chips||0); ['shopChips','arShopChips','coinBal'].forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent=bal; }); if(typeof updateMenuChips==='function') updateMenuChips(); }
+  function updateAllBalances(){ const bal='🪙 '+fmt(meta.chips||0); ['shopChips','arShopChips','coinBal','arCoin'].forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent=bal; }); if(typeof updateMenuChips==='function') updateMenuChips(); }
   // ---------- In-App-Käufe: Google Play Billing in der TWA via Digital Goods API ----------
   // Funktioniert NUR in der installierten Play-App (mit aktiviertem Play Billing). Im Browser/iOS
   // ist getDigitalGoodsService nicht vorhanden → Shop bleibt auf „bald verfügbar".
@@ -4677,7 +4677,7 @@
   { const sb=document.getElementById('shipBtn'); if(sb) sb.addEventListener('click',()=>{ shopTab='cosmetic'; openArsenalView('shop'); }); }   // Hauptmenü → Hub auf Werkstatt/Kosmetik (Skins + Editor)
   { const cb=document.getElementById('coinBtn'); if(cb){ cb.innerHTML='<span class="ico">'+CHEST_SVG+'</span><span class="iconLbl" id="lblCoin">'+t('il_coin')+'</span>'; cb.addEventListener('click',openCoinShop); }
     // JEDE Coin-Anzeige → Coinshop (konsistent): Guthaben-Buttons, HUD-Zähler, Menü-Coins
-    ['shopChips','arShopChips'].forEach(id=>{ const e=document.getElementById(id); if(e) e.addEventListener('click',openCoinShop); });
+    ['shopChips','arShopChips','arCoin'].forEach(id=>{ const e=document.getElementById(id); if(e) e.addEventListener('click',openCoinShop); });
     { const ch=document.getElementById('coinHud'); if(ch) ch.addEventListener('click',coinTapToShop); }                                  // HUD oben links (pausiert den Run zuerst)
     { const mc=document.getElementById('menuChips'); if(mc) mc.addEventListener('click',e=>{ e.stopPropagation(); openCoinShop(); }); }   // Coins im WERKSTATT-Knopf: nur die Zahl → Coinshop (Knopf selbst → Hub)
     const ct=document.getElementById('coinTitle'); if(ct) ct.innerHTML=CHEST_SVG+' COINS';
