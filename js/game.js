@@ -1037,10 +1037,11 @@
   const PMAX=320; let pHead=0, pAlive=0;
   function initParticlePool(){ particles=[]; for(let i=0;i<PMAX;i++) particles.push({x:0,y:0,vx:0,vy:0,life:0,decay:0,color:'#fff',size:0}); pHead=0; }
   initParticlePool();   // einmalig: Pool fuellen, danach nie wieder neu allokieren
-  function emitP(x,y,vx,vy,decay,color,size){ const p=particles[pHead]; pHead=(pHead+1)%PMAX;
+  function emitP(x,y,vx,vy,decay,color,size){ if(fxQ<0.85 && Math.random()>=fxQ) return;   // zentrale Dichte-Bremse: bei Lag einen Teil (1-fxQ) ALLER Partikel weglassen (auch direkte emitP-Aufrufe in Waffen/Effekten)
+    const p=particles[pHead]; pHead=(pHead+1)%PMAX;
     p.x=x;p.y=y;p.vx=vx;p.vy=vy;p.life=1;p.decay=decay;p.color=color;p.size=size; }
   function clearParticles(){ for(let i=0;i<particles.length;i++) particles[i].life=0; pHead=0; }
-  function spawnParticles(x,y,color,n,spd){ n=Math.max(1,Math.round(n*fxQ)); for(let i=0;i<n;i++){const a=Math.random()*6.28,s=rand(spd*0.3,spd);   // fxQ: bei Lag weniger Partikel erzeugen
+  function spawnParticles(x,y,color,n,spd){ n=Math.max(1,Math.round(n)); for(let i=0;i<n;i++){const a=Math.random()*6.28,s=rand(spd*0.3,spd);   // Dichte-Drosselung zentral in emitP (greift auch für direkte Emitter)
     emitP(x,y,Math.cos(a)*s,Math.sin(a)*s,rand(0.012,0.03),color,rand(2,5));} }
   function floatText(x,y,text,color,size){ floaters.push({x,y,text,color:color||'#fff',size:size||16,life:1,vy:-42}); }
   // Einmal-Hinweis fürs Onboarding (pro Schlüssel nur einmal, in meta gemerkt) – nutzt das Banner-System
@@ -2938,8 +2939,10 @@
 
       // particles (additiv -> Funkenregen leuchtet übereinander). Glow via Halo+Kern statt teurem shadowBlur (mobil flüssig)
       ctx.globalCompositeOperation='lighter'; ctx.shadowBlur=0;
-      const pHalo=pAlive<140 && fxQ>0.7;   // Halo nur bei wenigen Partikeln & gutem Frame-Budget; bei Last nur Kern = halbe Füllkosten
-      for(const p of particles){ if(p.life<=0) continue; const a=p.life, s=p.size; ctx.fillStyle=p.color;
+      const pHalo=pAlive<140 && fxQ>0.7 && !_lowfx;   // Halo nur bei wenigen Partikeln & gutem Frame-Budget; bei Last nur Kern = halbe Füllkosten
+      let _pc=null;   // PERF: Burst-Partikel liegen im Ring zusammenhängend & teilen die Farbe → redundante fillStyle-Statewechsel sparen
+      for(const p of particles){ if(p.life<=0) continue; const a=p.life, s=p.size;
+        if(p.color!==_pc){ ctx.fillStyle=_pc=p.color; }
         if(pHalo){ ctx.globalAlpha=a*0.35; ctx.fillRect(p.x-s,p.y-s,s*2,s*2); }     // weicher additiver Halo
         ctx.globalAlpha=a;      ctx.fillRect(p.x-s/2,p.y-s/2,s,s); }               // heller Kern
       ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
