@@ -13,7 +13,7 @@
   /* === AUTO-BALANCE END === */
   let state=S.MENU, mode='normal';
   let DPR=Math.min(window.devicePixelRatio||1,2), W=0, H=0, lastT=0;
-  let frameMs=16, fxQ=1, qScale=1, vsyncMs=16;   // Performance-Governor: geglättete Frame-Zeit, FX-Qualität, interne Render-Skala, erkannte Bildwiederholrate
+  let frameMs=16, fxQ=1, qScale=1, vsyncMs=16, _lowfx=false;   // Performance-Governor: geglättete Frame-Zeit, FX-Qualität, interne Render-Skala, erkannte Bildwiederholrate, CSS-Notbremse
 
   // ---------- i18n (DE / EN / FR, Jugendsprache je Sprache) ----------
   function detectLang(){ const l=((navigator.language||navigator.userLanguage||'en')+'').slice(0,2).toLowerCase(); return (l==='de'||l==='fr')?l:'en'; }
@@ -4690,6 +4690,9 @@
     // senken, wenn Frames verloren gehen (>1.6× vsync); in Ruhe (<1.25×) umgekehrt wieder anheben.
     if(frameMs>vsyncMs*1.6){ if(fxQ>0.45) fxQ=Math.max(0.45,fxQ-0.04); else if(qScale>0.5){ qScale=Math.max(0.5,qScale-0.05); applyScale(); } }
     else if(frameMs<vsyncMs*1.25){ if(qScale<1){ qScale=Math.min(1,qScale+0.04); applyScale(); } else if(fxQ<1) fxQ=Math.min(1,fxQ+0.02); }
+    // CSS-Notbremse mit Hysterese: bei anhaltendem Druck dekorative HUD-/CRT-Effekte abschalten (body.lowfx), erst bei klarer Erholung wieder an
+    let lf=_lowfx; if(!_lowfx && fxQ<=0.55) lf=true; else if(_lowfx && fxQ>=0.8) lf=false;
+    if(lf!==_lowfx){ _lowfx=lf; document.body.classList.toggle('lowfx',lf); }
     if(meta.research&&(meta.research.active||(meta.research.queue&&meta.research.queue.length))) drainResearchInstant();   // Alt-Speicherstand mit laufender Forschung → sofort gutschreiben (läuft genau einmal)
     if(state===S.PLAY){ if(coachPause) coachFreezeTick(dt); else update(dt); }
     else { elapsed=(elapsed||0)+dt; updateStars(dt);
