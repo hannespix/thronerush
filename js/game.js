@@ -797,14 +797,19 @@
     const sub=actx.createOscillator(); sub.type='triangle'; sub.frequency.setValueAtTime(freq/2,time);
     const sg=actx.createGain(); sg.gain.value=0.32; sub.connect(sg); sg.connect(lp); sub.start(time); sub.stop(time+dur+0.03);
   }
+  // PERF: EIN gemeinsamer Weißrausch-Puffer (2 s), wird über alle Snares/Hats/Riser wiederverwendet.
+  // Vorher: jeder mNoise-Aufruf legte einen neuen AudioBuffer an und füllte tausende Random-Samples
+  // (mehrfach pro Takt) → massive GC-Last + Main-Thread-Stottern. Jetzt nur noch ein billiger BufferSource.
+  let _noiseBuf=null;
+  function noiseBuf(){ if(_noiseBuf) return _noiseBuf;
+    const len=actx.sampleRate*2, b=actx.createBuffer(1,len,actx.sampleRate), d=b.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=Math.random()*2-1; _noiseBuf=b; return b; }
   function mNoise(time,dur,vol,hp){
-    const len=Math.max(1,Math.floor(actx.sampleRate*dur));
-    const buf=actx.createBuffer(1,len,actx.sampleRate), d=buf.getChannelData(0);
-    for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
-    const src=actx.createBufferSource(); src.buffer=buf;
+    const src=actx.createBufferSource(); src.buffer=noiseBuf(); src.loop=true;
     const f=actx.createBiquadFilter(); f.type='highpass'; f.frequency.value=hp||4000;
     const g=actx.createGain(); g.gain.setValueAtTime(vol,time); g.gain.exponentialRampToValueAtTime(0.001,time+dur);
-    src.connect(f); f.connect(g); g.connect(musicGain); src.start(time); src.stop(time+dur);
+    src.connect(f); f.connect(g); g.connect(musicGain);
+    src.start(time, Math.random()*1.8); src.stop(time+dur);   // zufälliger Startoffset = Variation ohne neuen Puffer
   }
   function mKick(time){
     const o=actx.createOscillator(), g=actx.createGain();
@@ -2761,9 +2766,10 @@
     g.addColorStop(0,lift(curBg.top)); g.addColorStop(.55,lift(curBg.mid)); g.addColorStop(1,lift(curBg.bot));
     ctx.fillStyle=g; ctx.fillRect(-40,-40,W+80,H+80);
     // Sterne ZUERST (tiefster Hintergrund) → Synthwave-Sonne liegt eine Ebene davor
+    const starGlow=(fxQ==null||fxQ>0.7);   // PERF: weicher Stern-Schein (teures shadowBlur, ~25×/Frame) nur bei gutem Frame-Budget
     for(const s of stars){ const tw=0.82+0.18*Math.sin(s.tw); ctx.globalAlpha=Math.min(1,(0.32+s.z*0.72)*tw);
       ctx.fillStyle=s.z>0.62?'#e6dcff':'#c3abff';
-      if(s.z>0.74){ ctx.shadowBlur=5*s.z; ctx.shadowColor='#cfc2ff'; ctx.fillRect(s.x,s.y,s.r,s.r); ctx.shadowBlur=0; }
+      if(s.z>0.74 && starGlow){ ctx.shadowBlur=5*s.z; ctx.shadowColor='#cfc2ff'; ctx.fillRect(s.x,s.y,s.r,s.r); ctx.shadowBlur=0; }
       else ctx.fillRect(s.x,s.y,s.r,s.r); } ctx.globalAlpha=1;
     drawGrid();
     if(state===S.MENU) drawMenuShip();   // nur Hauptmenü: aktuelles Schiff zentral vor der Sonne (im Hintergrund hinter dem Menü)
