@@ -1381,7 +1381,7 @@
     comboTime=0; comboTimeMax=3.4; beatIdx=0; beatPulse=0; spawnQueued=false; orbQueued=false;
     director=0.5; overdrive=false; tBlast=0; tMiss=rand(0.3,0.7); tFlame=0; tFrost=0; tChain=rand(0.4,0.8); tNova=rand(0.5,1.0); tRail=rand(0.4,0.9); teslaCount=0; bossPending=false; boss=null; ebullets=[]; gemT=rand(8,13);
     endless=false; madness=0; wonThisRun=false; laserFinal=false;
-    runOrbs=0; runPerfect=0; runBosses=0; madnessTime=0; runMaxMult=1; runSPgain=0; runHits=0; onbDrops=0; runChipsPaid=0; runChipsEarned=0; coinSaveAcc=0; runJumps=0; runLoot=0; inputDirty=false; idleStretch=0; runIdleMax=0; runIdleAcc=0; breatherT=rand(24,32); breatherActive=0; chestT=rand(30,46); mkCount=0; mkTimer=0; coachQueue=[]; coachCd=0; coachCard=null; coachPause=false; pickMissions();
+    runOrbs=0; runPerfect=0; runBosses=0; madnessTime=0; runMaxMult=1; runSPgain=0; runHits=0; onbDrops=0; runChipsPaid=0; runChipsEarned=0; coinSaveAcc=0; runJumps=0; runLoot=0; inputDirty=false; idleStretch=0; runIdleMax=0; runIdleAcc=0; breatherT=rand(24,32); breatherActive=0; chestT=rand(70,100); mkCount=0; mkTimer=0; coachQueue=[]; coachCd=0; coachCard=null; coachPause=false; pickMissions();
     flowI=1; skillBias=computeSkillBias();   // Flow-Regler zuruecksetzen + Skill-Offset aus den letzten Runs lernen
     shipSeed=((daily?dailySeed():(Math.random()*1e9))|0)||1;
   }
@@ -1717,7 +1717,7 @@
     {id:'rate',  kind:'off', r:[4,9],    ap:v=>{ mods.wRate*=1+v/100; }},
     {id:'crit',  kind:'off', r:[3,7],    ap:v=>{ mods.critBase=(mods.critBase||0)+v/100; }},
     {id:'score', kind:'util',r:[5,12],   ap:v=>{ mods.scoreMult*=1+v/100; }},
-    {id:'coin',  kind:'util',r:[8,16],   ap:v=>{ mods.orbValueMult*=1+v/100; }},
+    {id:'coin',  kind:'util',r:[6,10],   ap:v=>{ mods.orbValueMult*=1+v/100; }},
     {id:'magnet',kind:'util',r:[30,80],  ap:v=>{ mods.magnetPassive+=v; }},
     {id:'near',  kind:'util',r:[5,11],   ap:v=>{ mods.nearRadius*=1+v/100; }},
     {id:'hull',  kind:'def', r:[3,6],    ap:v=>{ mods.playerR=Math.max(8,mods.playerR*(1-v/100)); if(player)player.r=mods.playerR; }}   // gedeckelt (Floor 8): keine Hitbox-Runaway
@@ -1939,8 +1939,8 @@
     spawnParticles(s.x,s.y,'#19f0ff',16,240); flash=Math.min(0.5,(flash||0)+0.18); flashColor='#19f0ff'; vibe([12,16]); beep(1600,0.06,'square',0.12,300); updateAllBalances();
     coach('sp'); }   // erster Skillpunkt: Coach zeigt die Werkstatt
   // Boss-Drop: 0–3 Skillpunkte, gewichtet – meist 0/1 (1 ~50%), 2 sehr selten, 3 sehr sehr selten
-  function grantBossSP(x,y){ const r=Math.random(); let n=r<0.41?0:(r<0.91?1:(r<0.985?2:3));
-    if(runBosses<=2 && n<1) n=1;   // verlässlicher Progress-Einstieg: die ersten beiden Bosse geben sicher mind. 1 Skillpunkt
+  function grantBossSP(x,y){ const r=Math.random(); let n=r<0.72?1:(r<0.95?2:3);   // Boss gibt jetzt IMMER ≥1 Skillpunkt (häufiger SP-Quelle = Boss statt Zufall), 2–3 seltener
+    if(runBosses<=2 && n<1) n=1;   // verlässlicher Progress-Einstieg (greift dank Mindestwert 1 ohnehin)
     if(n<=0) return;   // kein Drop
     if(state!==S.PLAY){ skillPts+=n; saveSP(); updateAllBalances(); return; }   // außerhalb des Spiels: direkt gutschreiben (kein Feld)
     for(let i=0;i<n;i++) spawnSP(x+rand(-46,46), y+rand(-12,34));
@@ -2014,7 +2014,7 @@
     dropLoot(W/2,H*0.32,'boss',wasFinal); if(wasFinal) dropLoot(W/2+40,H*0.32,'boss',true);   // garantierte Boss-Beute (Finale: doppelt)
     bossNumber++; runBosses++;
     if(wasFinal){ const chips=Math.round((120+Math.min(bossNumber,15)*8)*diffChip); meta.chips=(meta.chips||0)+chips; saveMeta(); updateMenuChips(); winGame(); }
-    else { floatText(W/2,H*0.4,t('survived')+' +'+bonus,'#2effc0',18); levelUp(); } }   // Welle überstanden → Level geschafft
+    else { floatText(W/2,H*0.4,t('survived')+' +'+bonus,'#2effc0',18); levelUp(); chestT=rand(4,8); } }   // Welle überstanden → Level geschafft · Boss-Belohnung: Truhe erscheint bald im neuen Level
   function spawnLaserWave(){ const mixed=bossNumber>=3, vert=(bossNumber%2===1);
     const room=Math.max(0,5-lasers.length);   // gleichzeitige Wände hart begrenzen → Bild bleibt lesbar (kein Linien-Wirrwarr im Lategame)
     const count=Math.min(room,Math.min(6,1+Math.floor(bossNumber/2)+Math.min(2,Math.floor(pwrSurv()*0.14))));
@@ -2331,7 +2331,7 @@
     coinT-=dt; if(coinT<=0){ if(!bossActive){ if(Math.random()<0.25) spawnCoinGroup(); else spawnCoin(); } coinT=rand(1.1,2.1); }
     // Power-Ups: Drops aus Gegnern (killObstacle) + leichte Grund-Spawn-Uhr, damit auch am Anfang welche kommen
     powerupT-=dt; if(powerupT<=0){ if(powerups.length<2 && !bossActive) spawnPowerup(); powerupT=rand(13,19); }
-    chestT-=dt; if(chestT<=0){ if(!bossActive && (level>=2)) spawnChest(); chestT=rand(40,60); }   // Beute-Truhe: selten, schwebt durchs Feld (Risiko/Belohnung)
+    chestT-=dt; if(chestT<=0){ if(!bossActive && (level>=2)) spawnChest(); chestT=rand(80,115); }   // Beute-Truhe: zufällig jetzt deutlich seltener (Hauptquelle ist der Boss-Kill, s. endBoss)
     // Auto-Fire (sobald eine Waffe ausgerüstet ist)
     // Auto-Fire pro Waffe (touch-freundlich: feuert selbstständig sobald Cooldown bereit, Zielen automatisch)
     if(opt.guns){
@@ -2365,7 +2365,7 @@
       if(o.slow>0){ o.slow-=dt; if(o.slow<=0) o.slowAmt=1; }   // Slow ausgelaufen → Resttempo zurück (ccSat bleibt: Wieder-Einfrieren ist gesättigt)
       if(o.burn>0){ o.burn-=dt; let bd=(o.burnDmg||0); if(syn.thermo&&o.slow>0) bd*=2.6;   // THERMOSCHOCK: brennend+gefroren
         o.hp-=bd*dt;
-        if(Math.random()<0.8) emitP(o.cx+rand(-o.w*0.35,o.w*0.35),o.cy+rand(-4,6),rand(-18,18),-rand(45,100),0.45,Math.random()<0.4?'#ffe24d':'#ff5a1a',rand(3,6));   // aufsteigende Glut
+        if(Math.random()<Math.min(0.5,dt*30)) emitP(o.cx+rand(-o.w*0.35,o.w*0.35),o.cy+rand(-4,6),rand(-18,18),-rand(45,100),0.45,Math.random()<0.4?'#ffe24d':'#ff5a1a',rand(3,6));   // aufsteigende Glut – dezenter + framerate-unabhängig (vorher 0.8/Frame → bei 120Hz doppelt so viel)
         o.burnTick=(o.burnTick||0)+bd*dt; if(o.burnTick>=3){ floatDamage(o.cx+rand(-6,6),o.cy-o.h*0.5,o.burnTick,false); o.burnTick=0; }   // sichtbarer Brennschaden
         if(o.hp<=0){ if(o.burnConsume) addScore(6); killObstacle(o); obstacles.splice(i,1); continue; } }
       if(o.slow>0 && Math.random()<0.3) emitP(o.cx+rand(-o.w*0.4,o.w*0.4),o.cy+rand(-o.h*0.4,o.h*0.4),0,rand(8,26),0.5,'#cdf2ff',rand(2,4));   // Frost-Funkeln
@@ -2491,7 +2491,7 @@
       if(dx*dx+dy*dy<rr*rr){ combo++; setMult(); refillCombo(); director=Math.min(1,director+0.012); runOrbs++;   // Münzen bauen jetzt auch Combo + geben Punkte (Orbs sind dadurch überflüssig)
         addScore(Math.round(8*multiplier));
         const dbl=effects.double>0?2:1;                                  // ×2-Power-up wirkt auch auf Münzen
-        const flat=c.val*(mods.orbValueMult||1);                         // Grundwert ohne Combo
+        const flat=c.val*Math.min(2.4,mods.orbValueMult||1);             // Grundwert ohne Combo · Coin-Mult gedeckelt (2.4×) → kein Late-Game-Coin-Flood durch gestapelte Münz-Affixe
         const amt=Math.max(1,Math.round(flat*coinMult()*dbl));           // coinMult() ist der EINZIGE Combo-Faktor (kein Doppel-Multiplikator mehr → Coin-Flut behoben)
         comboCoinBonus+=Math.max(0,amt-Math.round(flat*dbl));            // nur der Combo-Anteil für die Anzeige am Combo-Ende
         awardCoins(amt,c.x,c.y-14,c.val>=5);
@@ -2641,7 +2641,7 @@
     // Power-Up-Drop: Grundchance, von Glück (mods.powerupRate) skaliert, größere Gegner droppen eher
     if(Math.random() < 0.06*(mods.powerupRate||1)*((o.maxHp||1)>=3?1.8:1)) dropPowerup(o.cx,o.cy);
     // Seltener Skillpunkt-Drop (von Glück skaliert, Panzer droppen leicht eher) → kleines Glücksgefühl
-    if(Math.random() < 0.0012*(mods.powerupRate||1)*((o.maxHp||1)>=3?1.5:1)) grantRandomSP(o.cx,o.cy);   // sichtbarer Skillpunkt-Drop (deutlich seltener)
+    if(Math.random() < 0.0005*(mods.powerupRate||1)*((o.maxHp||1)>=3?1.5:1)) grantRandomSP(o.cx,o.cy);   // Zufalls-Skillpunkt am Gegner: jetzt halbiert – Hauptquelle ist der Boss
     dropLoot(o.cx,o.cy,o.elite?'elite':'normal');   // Beute-Drop (Phase 2): Elites = Hauptquelle, normale Gegner selten
     if(o.burnSpread){ for(const n of obstacles){ if(n===o) continue; const dx=n.cx-o.cx,dy=n.cy-o.cy;  // FLÄCHENBRAND
       if(dx*dx+dy*dy<92*92){ n.burn=Math.max(n.burn||0,1.6); n.burnDmg=Math.max(n.burnDmg||0,(o.burnDmg||0.8)*0.8); n.burnSpread=true; } } } }
