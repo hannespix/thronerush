@@ -2775,6 +2775,9 @@
     if(state===S.MENU) drawMenuShip();   // nur Hauptmenü: aktuelles Schiff zentral vor der Sonne (im Hintergrund hinter dem Menü)
 
     if(state===S.PLAY||state===S.OVER||state===S.UPGRADE||state===S.PAUSE){
+      // PERF/Bloom: additive Objekt-Glows = Füllrate. gK skaliert die Glow-Größe mit dem Frame-Budget,
+      // gGlow schaltet sie unter Last ganz ab (nur Kerne), gFus spart die zweite Fusions-Aura zuerst.
+      const gK=Math.min(1,fxQ), gGlow=fxQ>0.5, gFus=fxQ>0.7;
       // Railgun-Schienen (eigene, kurz aufleuchtend)
       if(player) for(const bm of beams){ const a=Math.max(0,bm.t/0.22); ctx.save(); ctx.globalCompositeOperation='lighter';
         const bc=bm.col||'#fff27a';
@@ -2876,7 +2879,7 @@
         ctx.save(); ctx.translate(o.cx,o.cy); ctx.rotate(o.rot||0);
         const burning=o.burn>0, frozen=o.slow>0, el=elapsed||0;
         const glowCol=burning?(Math.sin(el*34+o.cx)>0?'#ff5a1a':'#ffd24d'):(frozen?'#8fe8ff':o.color);
-        const gr=Math.max(o.w,o.h)*(burning?(1.18+Math.sin(el*30+o.cy)*0.16):(frozen?0.95:0.85));   // brennend: pulsierender Feuerschein
+        const gr=Math.max(o.w,o.h)*(burning?(1.18+Math.sin(el*30+o.cy)*0.16):(frozen?0.95:0.85))*gK;   // brennend: pulsierender Feuerschein · gK: Glow mit Budget skalieren
         ctx.globalCompositeOperation='lighter'; ctx.drawImage(glowSprite(glowCol),-gr,-gr,gr*2,gr*2); ctx.globalCompositeOperation='source-over';
         const oc=(o.hitFlash>0)?'#ffffff':(frozen?'#bdefff':o.color);
         if(o.shape==='ring'){ ctx.strokeStyle=oc; ctx.lineWidth=o.w*0.26; ctx.beginPath(); ctx.arc(0,0,o.w*0.4,0,6.28); ctx.stroke(); }
@@ -2900,15 +2903,15 @@
           ctx.fillStyle=f>0.5?'#7cff2e':(f>0.25?'#ffe600':'#ff3b3b'); ctx.fillRect(bx,by,bw*f,2); }
       }
 
-      // bolzen (neon-laser, skin-farbig) & raketen — Glow via Sprite statt shadowBlur
+      // bolzen (neon-laser, skin-farbig) & raketen — Glow via Sprite statt shadowBlur (gK/gGlow s. oben)
       ctx.globalCompositeOperation='lighter'; ctx.lineCap='round';
       for(const b of bullets){
-        if(b.homing){ const gr=b.r*4.5; ctx.drawImage(glowSprite(b.col2||'#ff8a2e'),b.x-gr,b.y-gr,gr*2,gr*2);
+        if(b.homing){ const gr=b.r*4.5*gK; if(gGlow) ctx.drawImage(glowSprite(b.col2||'#ff8a2e'),b.x-gr,b.y-gr,gr*2,gr*2);
           ctx.fillStyle='#ff6a00'; ctx.beginPath(); ctx.arc(b.x-b.vx*0.012,b.y-b.vy*0.012,b.r*0.8,0,6.28); ctx.fill();
           ctx.fillStyle='#ffd36b'; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,6.28); ctx.fill();
           ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(b.x,b.y,b.r*0.4,0,6.28); ctx.fill(); }
-        else { const gr=b.r*3.4; if(b.col2){ const g2=b.r*5; ctx.drawImage(glowSprite(b.col2),b.x-g2,b.y-g2,g2*2,g2*2); }   // Fusions-Aura in Partnerfarbe
-          ctx.drawImage(glowSprite(b.col||'#19f0ff'),b.x-gr,b.y-gr,gr*2,gr*2);
+        else { const gr=b.r*3.4*gK; if(b.col2 && gFus){ const g2=b.r*5*gK; ctx.drawImage(glowSprite(b.col2),b.x-g2,b.y-g2,g2*2,g2*2); }   // Fusions-Aura nur bei Budget
+          if(gGlow) ctx.drawImage(glowSprite(b.col||'#19f0ff'),b.x-gr,b.y-gr,gr*2,gr*2);
           ctx.strokeStyle=b.col||'#caffff'; ctx.lineWidth=b.r;
           ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x-b.vx*0.022,b.y-b.vy*0.022); ctx.stroke();
           ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(b.x,b.y,b.r*0.5,0,6.28); ctx.fill(); } }
@@ -2918,8 +2921,8 @@
       if(boss) drawBoss();
       if(ebullets.length){
         // Glow (additive drawImage) nur bei moderater Kugelzahl + Budget – bei dichten Mega-Salven sofort weglassen (Fillrate-Schutz, der Governor reagiert zu träge)
-        if(fxQ>0.6 && ebullets.length<=120){ const gs=glowSprite('#ff2e88'); ctx.globalCompositeOperation='lighter';
-          for(const e of ebullets){ const gr=e.r*2.8; ctx.drawImage(gs,e.x-gr,e.y-gr,gr*2,gr*2); }
+        if(gGlow && ebullets.length<=120){ const gs=glowSprite('#ff2e88'); ctx.globalCompositeOperation='lighter';
+          for(const e of ebullets){ const gr=e.r*2.8*gK; ctx.drawImage(gs,e.x-gr,e.y-gr,gr*2,gr*2); }
           ctx.globalCompositeOperation='source-over'; }
         for(const e of ebullets){ ctx.fillStyle='#ff5ea8'; ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,6.28); ctx.fill();
           ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(e.x,e.y,e.r*0.4,0,6.28); ctx.fill(); } }
