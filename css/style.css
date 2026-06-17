@@ -9,6 +9,13 @@
   #wrap.crt::after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;
     background:repeating-linear-gradient(to bottom,rgba(0,0,0,.11) 0,rgba(0,0,0,.11) 1px,transparent 1px,transparent 3px),
       radial-gradient(ellipse at center,transparent 58%,rgba(0,0,0,.4) 100%);}
+  /* Performance-Notbremse: fällt die Framerate, setzt der Governor (JS, loop()) body.lowfx und schaltet
+     dauerhaft laufende Deko-Effekte aus, die pro Frame Compositor/Repaint kosten – die größte CSS-Last
+     während des Spiels. Der volle Look kehrt automatisch zurück, sobald wieder Luft ist. */
+  body.lowfx #wrap.crt::after{display:none;}                                   /* große Vollbild-Composite-Ebene weg */
+  body.lowfx .ckScan,body.lowfx .ckRadar b,body.lowfx .ckLeds i,
+  body.lowfx .ckLives,body.lowfx .ckSyS.rdy{animation:none!important;}         /* Dauer-Animationen über der Canvas stoppen */
+  body.lowfx .ckLeds i{opacity:1;}                                             /* LEDs einfach an, statt zu blinken */
 
   .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;z-index:10;
     padding:24px;padding-top:max(24px,env(safe-area-inset-top));padding-bottom:max(24px,env(safe-area-inset-bottom));

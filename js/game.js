@@ -13,7 +13,7 @@
   /* === AUTO-BALANCE END === */
   let state=S.MENU, mode='normal';
   let DPR=Math.min(window.devicePixelRatio||1,2), W=0, H=0, lastT=0;
-  let frameMs=16, fxQ=1, qScale=1, vsyncMs=16;   // Performance-Governor: geglättete Frame-Zeit, FX-Qualität, interne Render-Skala, erkannte Bildwiederholrate
+  let frameMs=16, fxQ=1, qScale=1, vsyncMs=16, _lowfx=false;   // Performance-Governor: geglättete Frame-Zeit, FX-Qualität, interne Render-Skala, erkannte Bildwiederholrate, CSS-Notbremse
 
   // ---------- i18n (DE / EN / FR, Jugendsprache je Sprache) ----------
   function detectLang(){ const l=((navigator.language||navigator.userLanguage||'en')+'').slice(0,2).toLowerCase(); return (l==='de'||l==='fr')?l:'en'; }
@@ -669,15 +669,96 @@
     {s:32,n:72,d:4},{s:36,n:76,d:4},{s:40,n:79,d:6},{s:46,n:77,d:2},
     {s:48,n:76,d:6},{s:54,n:72,d:4},{s:58,n:71,d:6}
   ];
+  // ---- 3. Phrasen (B-Teile) je Song → ein Song bleibt länger frisch, bevor er sich wiederholt ----
+  const LEAD3=[ // PROLOG (C-Dur), hellerer Gegenteil
+    {s:0,n:79,d:2},{s:2,n:81,d:2},{s:4,n:83,d:2},{s:6,n:84,d:2},{s:8,n:83,d:1},{s:9,n:81,d:1},{s:10,n:79,d:2},{s:12,n:76,d:4},
+    {s:16,n:77,d:2},{s:18,n:79,d:2},{s:20,n:81,d:2},{s:22,n:79,d:1},{s:23,n:77,d:1},{s:24,n:76,d:2},{s:26,n:72,d:2},{s:28,n:74,d:4},
+    {s:32,n:72,d:2},{s:34,n:76,d:2},{s:36,n:79,d:2},{s:38,n:84,d:2},{s:40,n:83,d:1},{s:41,n:79,d:1},{s:42,n:76,d:2},{s:44,n:72,d:4},
+    {s:48,n:74,d:2},{s:50,n:77,d:2},{s:52,n:79,d:2},{s:54,n:77,d:1},{s:55,n:74,d:1},{s:56,n:72,d:2},{s:58,n:71,d:2},{s:60,n:72,d:4}
+  ];
+  const LEADB3=[ // NACHTFAHRT (d-moll)
+    {s:0,n:74,d:2},{s:2,n:77,d:2},{s:4,n:79,d:2},{s:6,n:77,d:1},{s:7,n:76,d:1},{s:8,n:74,d:2},{s:10,n:72,d:2},{s:12,n:70,d:4},
+    {s:16,n:72,d:2},{s:18,n:74,d:2},{s:20,n:77,d:2},{s:22,n:81,d:2},{s:24,n:79,d:1},{s:25,n:77,d:1},{s:26,n:74,d:2},{s:28,n:72,d:4},
+    {s:32,n:69,d:2},{s:34,n:74,d:2},{s:36,n:77,d:2},{s:38,n:79,d:2},{s:40,n:77,d:1},{s:41,n:74,d:1},{s:42,n:72,d:2},{s:44,n:69,d:4},
+    {s:48,n:70,d:2},{s:50,n:74,d:2},{s:52,n:77,d:2},{s:54,n:74,d:1},{s:55,n:72,d:1},{s:56,n:70,d:2},{s:58,n:69,d:2},{s:60,n:74,d:4}
+  ];
+  const LEADC3=[ // ÜBERTAKTET (A-Dur, hektisch)
+    {s:0,n:81,d:1},{s:1,n:78,d:1},{s:2,n:76,d:2},{s:4,n:73,d:1},{s:5,n:76,d:1},{s:6,n:81,d:2},{s:8,n:85,d:1},{s:9,n:81,d:1},{s:10,n:78,d:2},{s:12,n:76,d:4},
+    {s:16,n:78,d:1},{s:17,n:81,d:1},{s:18,n:85,d:2},{s:20,n:88,d:2},{s:22,n:85,d:1},{s:23,n:81,d:1},{s:24,n:78,d:2},{s:26,n:73,d:2},{s:28,n:76,d:4},
+    {s:32,n:73,d:1},{s:33,n:76,d:1},{s:34,n:78,d:2},{s:36,n:81,d:1},{s:37,n:85,d:1},{s:38,n:88,d:2},{s:40,n:85,d:1},{s:41,n:81,d:1},{s:42,n:78,d:2},{s:44,n:76,d:4},
+    {s:48,n:80,d:1},{s:49,n:78,d:1},{s:50,n:76,d:2},{s:52,n:73,d:2},{s:54,n:69,d:2},{s:56,n:73,d:1},{s:57,n:76,d:1},{s:58,n:81,d:2},{s:60,n:81,d:4}
+  ];
+  const LEADD3=[ // STRATOSPHÄRE (G-Dur, hell)
+    {s:0,n:79,d:2},{s:2,n:83,d:2},{s:4,n:86,d:2},{s:6,n:83,d:1},{s:7,n:81,d:1},{s:8,n:79,d:2},{s:10,n:76,d:2},{s:12,n:74,d:4},
+    {s:16,n:76,d:2},{s:18,n:79,d:2},{s:20,n:83,d:2},{s:22,n:81,d:1},{s:23,n:79,d:1},{s:24,n:78,d:2},{s:26,n:74,d:2},{s:28,n:71,d:4},
+    {s:32,n:74,d:2},{s:34,n:78,d:2},{s:36,n:81,d:2},{s:38,n:86,d:2},{s:40,n:83,d:1},{s:41,n:79,d:1},{s:42,n:76,d:2},{s:44,n:74,d:4},
+    {s:48,n:71,d:2},{s:50,n:74,d:2},{s:52,n:79,d:2},{s:54,n:76,d:1},{s:55,n:74,d:1},{s:56,n:72,d:2},{s:58,n:74,d:2},{s:60,n:79,d:4}
+  ];
+  const LEADE3=[ // ARKADE (a-moll, eingängig)
+    {s:0,n:81,d:2},{s:2,n:79,d:1},{s:3,n:77,d:1},{s:4,n:76,d:2},{s:6,n:74,d:2},{s:8,n:72,d:1},{s:9,n:74,d:1},{s:10,n:76,d:2},{s:12,n:69,d:4},
+    {s:16,n:76,d:2},{s:18,n:77,d:1},{s:19,n:79,d:1},{s:20,n:81,d:2},{s:22,n:84,d:2},{s:24,n:83,d:1},{s:25,n:81,d:1},{s:26,n:79,d:2},{s:28,n:76,d:4},
+    {s:32,n:74,d:2},{s:34,n:77,d:2},{s:36,n:81,d:2},{s:38,n:79,d:1},{s:39,n:77,d:1},{s:40,n:76,d:2},{s:42,n:72,d:2},{s:44,n:69,d:4},
+    {s:48,n:72,d:2},{s:50,n:76,d:2},{s:52,n:79,d:2},{s:54,n:81,d:2},{s:56,n:79,d:1},{s:57,n:76,d:1},{s:58,n:74,d:2},{s:60,n:69,d:4}
+  ];
+  // Lead F – TIEFENRAUSCH (d-moll, dunkel/dubby, Half-Time): tiefe, langsame Melodie mit viel Raum
+  const LEADF1=[
+    {s:0,n:62,d:4},{s:4,n:65,d:2},{s:6,n:69,d:2},{s:8,n:67,d:2},{s:10,n:65,d:2},{s:12,n:62,d:4},
+    {s:16,n:60,d:4},{s:20,n:65,d:2},{s:22,n:69,d:2},{s:24,n:70,d:2},{s:26,n:69,d:2},{s:28,n:65,d:4},
+    {s:32,n:62,d:2},{s:34,n:69,d:2},{s:36,n:74,d:2},{s:38,n:72,d:2},{s:40,n:70,d:2},{s:42,n:69,d:2},{s:44,n:65,d:4},
+    {s:48,n:67,d:2},{s:50,n:65,d:2},{s:52,n:62,d:2},{s:54,n:60,d:2},{s:56,n:62,d:4},{s:60,n:57,d:4}
+  ];
+  const LEADF2=[
+    {s:0,n:74,d:2},{s:2,n:77,d:2},{s:4,n:81,d:2},{s:6,n:77,d:2},{s:8,n:74,d:2},{s:10,n:72,d:2},{s:12,n:70,d:4},
+    {s:16,n:72,d:2},{s:18,n:74,d:2},{s:20,n:77,d:2},{s:22,n:81,d:2},{s:24,n:82,d:2},{s:26,n:81,d:1},{s:27,n:77,d:1},{s:28,n:74,d:4},
+    {s:32,n:70,d:2},{s:34,n:74,d:2},{s:36,n:77,d:2},{s:38,n:81,d:2},{s:40,n:77,d:1},{s:41,n:74,d:1},{s:42,n:72,d:2},{s:44,n:69,d:4},
+    {s:48,n:70,d:2},{s:50,n:74,d:2},{s:52,n:77,d:2},{s:54,n:74,d:1},{s:55,n:70,d:1},{s:56,n:69,d:2},{s:58,n:67,d:2},{s:60,n:62,d:4}
+  ];
+  const LEADF3=[
+    {s:0,n:69,d:2},{s:2,n:72,d:2},{s:4,n:74,d:2},{s:6,n:77,d:2},{s:8,n:74,d:1},{s:9,n:72,d:1},{s:10,n:70,d:2},{s:12,n:69,d:4},
+    {s:16,n:65,d:2},{s:18,n:69,d:2},{s:20,n:74,d:2},{s:22,n:72,d:2},{s:24,n:70,d:2},{s:26,n:69,d:2},{s:28,n:67,d:4},
+    {s:32,n:74,d:2},{s:34,n:77,d:2},{s:36,n:81,d:2},{s:38,n:79,d:1},{s:39,n:77,d:1},{s:40,n:74,d:2},{s:42,n:70,d:2},{s:44,n:69,d:4},
+    {s:48,n:72,d:2},{s:50,n:70,d:2},{s:52,n:74,d:2},{s:54,n:72,d:1},{s:55,n:69,d:1},{s:56,n:67,d:2},{s:58,n:65,d:2},{s:60,n:62,d:4}
+  ];
+  // Lead G – HYPERLOOP (e-moll, schnell/energetisch, Breakbeat): treibende 16tel-Hooks
+  const LEADG1=[
+    {s:0,n:76,d:2},{s:2,n:79,d:2},{s:4,n:83,d:1},{s:5,n:81,d:1},{s:6,n:79,d:2},{s:8,n:76,d:2},{s:10,n:74,d:2},{s:12,n:71,d:4},
+    {s:16,n:74,d:2},{s:18,n:76,d:2},{s:20,n:79,d:2},{s:22,n:83,d:1},{s:23,n:81,d:1},{s:24,n:79,d:2},{s:26,n:76,d:2},{s:28,n:72,d:4},
+    {s:32,n:71,d:2},{s:34,n:74,d:2},{s:36,n:79,d:2},{s:38,n:83,d:2},{s:40,n:81,d:1},{s:41,n:79,d:1},{s:42,n:76,d:2},{s:44,n:71,d:4},
+    {s:48,n:72,d:2},{s:50,n:76,d:2},{s:52,n:79,d:2},{s:54,n:76,d:1},{s:55,n:74,d:1},{s:56,n:72,d:2},{s:58,n:71,d:2},{s:60,n:76,d:4}
+  ];
+  const LEADG2=[
+    {s:0,n:83,d:2},{s:2,n:86,d:2},{s:4,n:88,d:2},{s:6,n:86,d:1},{s:7,n:83,d:1},{s:8,n:81,d:2},{s:10,n:79,d:2},{s:12,n:76,d:4},
+    {s:16,n:79,d:2},{s:18,n:83,d:2},{s:20,n:86,d:2},{s:22,n:88,d:2},{s:24,n:86,d:1},{s:25,n:83,d:1},{s:26,n:79,d:2},{s:28,n:76,d:4},
+    {s:32,n:78,d:2},{s:34,n:81,d:2},{s:36,n:84,d:2},{s:38,n:88,d:2},{s:40,n:86,d:1},{s:41,n:83,d:1},{s:42,n:79,d:2},{s:44,n:76,d:4},
+    {s:48,n:79,d:2},{s:50,n:83,d:2},{s:52,n:86,d:2},{s:54,n:83,d:1},{s:55,n:79,d:1},{s:56,n:76,d:2},{s:58,n:74,d:2},{s:60,n:71,d:4}
+  ];
+  const LEADG3=[
+    {s:0,n:79,d:1},{s:1,n:81,d:1},{s:2,n:83,d:2},{s:4,n:81,d:1},{s:5,n:79,d:1},{s:6,n:76,d:2},{s:8,n:74,d:1},{s:9,n:76,d:1},{s:10,n:79,d:2},{s:12,n:71,d:4},
+    {s:16,n:76,d:2},{s:18,n:79,d:2},{s:20,n:81,d:2},{s:22,n:83,d:2},{s:24,n:84,d:1},{s:25,n:83,d:1},{s:26,n:81,d:2},{s:28,n:79,d:4},
+    {s:32,n:76,d:2},{s:34,n:79,d:2},{s:36,n:83,d:2},{s:38,n:81,d:1},{s:39,n:79,d:1},{s:40,n:76,d:2},{s:42,n:74,d:2},{s:44,n:71,d:4},
+    {s:48,n:74,d:2},{s:50,n:79,d:2},{s:52,n:83,d:2},{s:54,n:81,d:1},{s:55,n:76,d:1},{s:56,n:74,d:2},{s:58,n:72,d:2},{s:60,n:76,d:4}
+  ];
+  // ---- Groove-Identität pro Song: eigenes Schlagzeug-Pattern (Kick/Snare/Hat-Steps, Ghost-Snares, Swing) → jeder Song fühlt sich anders an ----
+  const GROOVES={
+    four:    {kick:[0,4,8,12], snare:[4,12], hat:2, ghost:[]},          // klassischer Four-on-the-floor
+    driving: {kick:[0,8],      snare:[4,12], hat:2, ghost:[]},          // treibender Backbeat (bisheriges Standard-Gefühl)
+    half:    {kick:[0,10],     snare:[8],    hat:4, ghost:[]},          // Half-Time: spärlich, viel Raum, dubby
+    break:   {kick:[0,3,10],   snare:[4,12], hat:2, ghost:[7,14]},      // Breakbeat: synkopiert + Ghost-Snares
+    electro: {kick:[0,6,10],   snare:[4,12], hat:2, ghost:[]},          // Electro-Funk: verschobene Kicks
+    shuffle: {kick:[0,8],      snare:[4,12], hat:2, ghost:[], swing:0.2} // Shuffle: geswingte Offbeats
+  };
+  // Songs: leads[] = 3 Phrasen (rotieren über Loops). groove/bassPat/staccato/leadEcho/leadOct = eigener Klang-Charakter.
   const SONGS=[
-    {name:'PROLOG',     lead1:LEAD1,  lead2:LEAD2,  bass:[36,43,45,36], chords:[[60,64,67],[55,59,62],[57,60,64],[60,64,67]], lt:'p50', leadVol:0.17, bassEighths:false, fourFloor:false, hatEvery:2},
-    {name:'NACHTFAHRT', lead1:LEADB1, lead2:LEADB2, bass:[38,43,45,43], chords:[[62,65,69],[58,62,67],[57,60,64],[58,62,67]], lt:'p25', leadVol:0.13, bassEighths:true,  fourFloor:false, hatEvery:4},
-    {name:'ÜBERTAKTET', lead1:LEADC1, lead2:LEADC2, bass:[45,40,42,38], chords:[[57,61,64],[52,56,59],[54,57,61],[50,54,57]], lt:'p12', leadVol:0.15, bassEighths:false, fourFloor:true,  hatEvery:1},
-    {name:'STRATOSPHÄRE',lead1:LEADD1, lead2:LEADD2, bass:[43,38,40,36], chords:[[55,59,62],[50,54,57],[52,55,59],[48,52,55]], lt:'p25', leadVol:0.13, bassEighths:true,  fourFloor:false, hatEvery:2},
-    {name:'ARKADE',     lead1:LEADE1, lead2:LEADE2, bass:[45,43,41,43], chords:[[57,60,64],[55,59,62],[53,57,60],[55,59,62]], lt:'p25', leadVol:0.15, bassEighths:true,  fourFloor:true,  hatEvery:2}
+    {name:'PROLOG',      leads:[LEAD1, LEAD2, LEAD3],   bass:[36,43,45,36], chords:[[60,64,67],[55,59,62],[57,60,64],[60,64,67]], lt:'p50', leadVol:0.17, groove:'four',    bassPat:'quarter', staccato:0.96, leadEcho:0.32},
+    {name:'NACHTFAHRT',  leads:[LEADB1,LEADB2,LEADB3],  bass:[38,43,45,43], chords:[[62,65,69],[58,62,67],[57,60,64],[58,62,67]], lt:'p25', leadVol:0.13, groove:'driving', bassPat:'octave',  staccato:0.90, leadEcho:0.44, hatEvery:4},
+    {name:'ÜBERTAKTET',  leads:[LEADC1,LEADC2,LEADC3],  bass:[45,40,42,38], chords:[[57,61,64],[52,56,59],[54,57,61],[50,54,57]], lt:'p12', leadVol:0.15, groove:'break',   bassPat:'offbeat', staccato:0.62, leadEcho:0.20, hatEvery:1},
+    {name:'STRATOSPHÄRE',leads:[LEADD1,LEADD2,LEADD3],  bass:[43,38,40,36], chords:[[55,59,62],[50,54,57],[52,55,59],[48,52,55]], lt:'p25', leadVol:0.13, groove:'electro', bassPat:'eighth',  staccato:0.95, leadEcho:0.36},
+    {name:'ARKADE',      leads:[LEADE1,LEADE2,LEADE3],  bass:[45,43,41,43], chords:[[57,60,64],[55,59,62],[53,57,60],[55,59,62]], lt:'p25', leadVol:0.15, groove:'shuffle', bassPat:'walk',    staccato:0.80, leadEcho:0.30},
+    {name:'TIEFENRAUSCH',leads:[LEADF1,LEADF2,LEADF3],  bass:[38,34,41,36], chords:[[62,65,69],[58,62,65],[57,60,64],[60,64,67]], lt:'p25', leadVol:0.13, groove:'half',    bassPat:'octave',  staccato:0.92, leadEcho:0.46, leadOct:-12, hatEvery:4},
+    {name:'HYPERLOOP',   leads:[LEADG1,LEADG2,LEADG3],  bass:[40,36,43,38], chords:[[64,67,71],[60,64,67],[55,59,62],[62,66,69]], lt:'p12', leadVol:0.15, groove:'break',   bassPat:'eighth',  staccato:0.68, leadEcho:0.24, hatEvery:1}
   ];
   // Eigener, entspannter Menü-Track (rotiert NICHT mit den Level-Songs)
-  const MENU_SONG={name:'NEON CHILL', lead1:LEADM1, lead2:LEADM2, bass:[36,45,41,43],
+  const MENU_SONG={name:'NEON CHILL', leads:[LEADM1,LEADM2], bass:[36,45,41,43],
     chords:[[60,64,67,71],[57,60,64,67],[53,57,60,64],[55,59,62,65]], lt:'triangle', leadVol:0.135, chill:true};
   let curSong=0, pendingSong=-1;   // pendingSong: gewählter Folge-Song, wird erst an einer ruhigen Stelle (Intro/Verse) eingeblendet → schleichend
   // ---- Game-Boy-Pulswellen (Tastverhältnis) ----
@@ -716,14 +797,19 @@
     const sub=actx.createOscillator(); sub.type='triangle'; sub.frequency.setValueAtTime(freq/2,time);
     const sg=actx.createGain(); sg.gain.value=0.32; sub.connect(sg); sg.connect(lp); sub.start(time); sub.stop(time+dur+0.03);
   }
+  // PERF: EIN gemeinsamer Weißrausch-Puffer (2 s), wird über alle Snares/Hats/Riser wiederverwendet.
+  // Vorher: jeder mNoise-Aufruf legte einen neuen AudioBuffer an und füllte tausende Random-Samples
+  // (mehrfach pro Takt) → massive GC-Last + Main-Thread-Stottern. Jetzt nur noch ein billiger BufferSource.
+  let _noiseBuf=null;
+  function noiseBuf(){ if(_noiseBuf) return _noiseBuf;
+    const len=actx.sampleRate*2, b=actx.createBuffer(1,len,actx.sampleRate), d=b.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=Math.random()*2-1; _noiseBuf=b; return b; }
   function mNoise(time,dur,vol,hp){
-    const len=Math.max(1,Math.floor(actx.sampleRate*dur));
-    const buf=actx.createBuffer(1,len,actx.sampleRate), d=buf.getChannelData(0);
-    for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
-    const src=actx.createBufferSource(); src.buffer=buf;
+    const src=actx.createBufferSource(); src.buffer=noiseBuf(); src.loop=true;
     const f=actx.createBiquadFilter(); f.type='highpass'; f.frequency.value=hp||4000;
     const g=actx.createGain(); g.gain.setValueAtTime(vol,time); g.gain.exponentialRampToValueAtTime(0.001,time+dur);
-    src.connect(f); f.connect(g); g.connect(musicGain); src.start(time); src.stop(time+dur);
+    src.connect(f); f.connect(g); g.connect(musicGain);
+    src.start(time, Math.random()*1.8); src.stop(time+dur);   // zufälliger Startoffset = Variation ohne neuen Puffer
   }
   function mKick(time){
     const o=actx.createOscillator(), g=actx.createGain();
@@ -779,16 +865,20 @@
     const block=Math.floor(step/16), ls=step%16;
     // ---- SONGFORM: echtes Arrangement statt 2-Phrasen-Loop (Intro→Verse→Chorus→Bridge→Chorus über 8 Loops) ----
     const sec=song.chill?{p:(loopCount%2)+1,m:'chill'}:FORM[loopCount%FORM.length];
-    const lead=sec.p===2?song.lead2:song.lead1;
+    const leads=song.leads||[song.lead1,song.lead2];
+    let pi=(sec.p-1)%leads.length;                                            // p=1→Phrase A, p=2→Phrase B
+    if(leads.length>1) pi=(pi+Math.floor(loopCount/FORM.length))%leads.length; // weitere Phrasen rotieren über die Loops rein → länger frisch
+    const lead=leads[pi]||leads[0];
     const m=sec.m;
     const intro=m==='intro', verse=m==='verse', build=m==='build', drop=m==='drop', chorus=m==='chorus', bridge=m==='bridge';
     const big=drop||chorus;                           // volle Energie (Drop/Chorus)
     const kt=bridge?5:0;                              // Bridge: Melodie + Harmonie eine Quarte hoch = klar neues Songteil
     const root=song.bass[block]+kt;
     // ---- LEAD = Hauptmelodie klar VORN. Verse am lautesten; im Build läuft sie sanft aus (kein harter Schnitt → fließt) ----
+    const lo=song.leadOct||0, stac=song.staccato||0.94, lecho=(song.leadEcho!=null?song.leadEcho:echo);   // Artikulation/Hall pro Song = eigener Lead-Charakter
     if(!build || step<32){ const lvol=build?lv*0.7*(1-step/32):(verse?lv*1.32:(big?lv*1.14:(intro?lv*0.82:lv)));
-      for(const e of lead) if(e.s===step){ mLead(time,midiF(e.n+kt),e.d*secPerStep*0.94,song.lt,lvol,echo);
-        if(big && e.d>=2) mVoice(time,midiF(e.n+kt+12),e.d*secPerStep*0.6,'p50',lv*0.3,0.012); } }   // Drop/Chorus: Oktav-Harmonie drauf
+      for(const e of lead) if(e.s===step){ mLead(time,midiF(e.n+kt+lo),e.d*secPerStep*stac,song.lt,lvol,lecho);
+        if(big && e.d>=2) mVoice(time,midiF(e.n+kt+lo+12),e.d*secPerStep*0.6,'p50',lv*0.3,0.012); } }   // Drop/Chorus: Oktav-Harmonie drauf
     if(song.chill){
       if(ls===0||ls===8) mVoice(time,midiF(root),secPerStep*5,'triangle',0.20,0.012);                 // weicher, ruhiger Bass
       if(ls===0){ for(const cn of song.chords[block]) mVoice(time,midiF(cn+12),secPerStep*15,'sine',0.03,0.06); } // sanfter Pad-Akkord
@@ -807,9 +897,15 @@
         const sc=song.chords[block]; mVoice(time,midiF(sc[(step/2)%sc.length]+12+(step>=48?12:0)),secPerStep*0.4,'p25',0.035,0.002); } // aufsteigender Chip-Riser
       return;
     }
-    // ---- BASS (Drop/Chorus: NES-Oktav-Bounce · Intro sparsam) ----
-    if(song.bassEighths && !intro){ if(ls%2===0) mVoice(time,midiF(root+((big&&ls%4===2)?12:0)),secPerStep*1.5,'triangle',big?0.30:0.24,0.004); } // treibender Achtel-Bass
-    else { if(ls%4===0) mVoice(time,midiF(root),secPerStep*2,'triangle',big?0.33:(intro?0.2:0.27),0.004); else if(ls%4===2 && !intro) mVoice(time,midiF(root+7),secPerStep*1.4,'triangle',0.15); }
+    // ---- BASS: eigene Figur pro Song (bassPat) · Intro immer sparsam ----
+    if(intro){ if(ls%4===0) mVoice(time,midiF(root),secPerStep*2,'triangle',0.2,0.004); }
+    else{ const bp=song.bassPat||'quarter';
+      if(bp==='eighth'){ if(ls%2===0) mVoice(time,midiF(root+((big&&ls%4===2)?12:0)),secPerStep*1.5,'triangle',big?0.30:0.24,0.004); }            // treibender Achtel-Bass
+      else if(bp==='octave'){ if(ls%4===0) mVoice(time,midiF(root),secPerStep*1.4,'triangle',big?0.32:0.26,0.004); else if(ls%4===2) mVoice(time,midiF(root+12),secPerStep*1.2,'triangle',big?0.22:0.16,0.004); } // NES-Oktav-Bounce
+      else if(bp==='offbeat'){ if(ls%4===0) mVoice(time,midiF(root),secPerStep*1.2,'triangle',big?0.30:0.24,0.004); if(ls%4===2) mVoice(time,midiF(root+12),secPerStep*0.8,'triangle',0.18,0.004); } // Eins + Offbeat-Stups
+      else if(bp==='walk'){ const wk=[root,root+7,root+12,root+7]; if(ls%2===0) mVoice(time,midiF(wk[(ls/2)%4]),secPerStep*1.3,'triangle',big?0.28:0.22,0.004); } // laufender Bass durch die Akkordtöne
+      else { if(ls%4===0) mVoice(time,midiF(root),secPerStep*2,'triangle',big?0.33:0.27,0.004); else if(ls%4===2) mVoice(time,midiF(root+7),secPerStep*1.4,'triangle',0.15); } // quarter
+    }
     // ---- DROP = Impact mit Wucht: Crash + Powerchord + EIN kurzer Wob + aufsteigende Arcade-Laser-Fanfare (weniger wawa!) ----
     if(drop && ls===0){ mNoise(time,0.32,0.11,2400); mWobble(time,midiF(root-12),secPerStep*5);             // dezenter Crash + EIN Wob
       for(let z=0;z<4;z++) mLaser(time+z*secPerStep*0.5,midiF(root+12+[0,4,7,12][z]),secPerStep*0.55,true,0.04); } // Laser-Fanfare hoch (dezenter)
@@ -823,11 +919,14 @@
       if(big && ls%2===0) mVoice(time,midiF(ch[(step+2)%ch.length]+24+kt),secPerStep*0.3,'p12',0.05,0.001);      // 2. Oktave = breiter Chip-Sound
       if(big && ls%4===2){ for(const cn of ch) mVoice(time,midiF(cn+12+kt),secPerStep*0.5,'p25',0.03,0.002); }   // punchy Chip-Stab auf dem Backbeat
       if(big && (ls===14||ls===15)){ mVoice(time,midiF(ch[(step%2?0:2)%ch.length]+24+kt),secPerStep*0.22,'p12',0.05,0.001); } } // 16tel-Trill am Taktende = durchgedreht
-    // ---- DRUMS: Intro = nur Eins · Drop/Chorus = Four-on-the-floor + fette Snare · Verse/Bridge = sparsam ----
-    if(intro){ if(ls===0) mKick(time); }
-    else if(big){ if(ls%4===0) mKick(time); } else { if(ls===0||ls===8) mKick(time); }
-    if((ls===4||ls===12) && !intro) mNoise(time,0.12,big?0.20:0.13,1800);                               // Snare
-    if(state===S.PLAY && !intro && ls%((song.hatEvery||2)*(big?1:2))===0) mNoise(time,0.025,big?0.06:0.04,8000); // Hats
+    // ---- DRUMS: Groove-Pattern des Songs (Intro = nur Eins · Drop/Chorus treibt voll · Half-Time behält Charakter) ----
+    const gv=GROOVES[song.groove]||GROOVES.four;
+    const sw=(gv.swing&&ls%4===2)?gv.swing*secPerStep:0;                                                 // Shuffle: Offbeats leicht verzögert
+    const kicks=intro?[0]:(big&&song.groove!=='half')?[0,4,8,12]:gv.kick;                                // Drop/Chorus = Four-on-the-floor (außer Half-Time)
+    if(kicks.indexOf(ls)>=0) mKick(time+sw);
+    if(!intro){ for(const sn of gv.snare) if(sn===ls) mNoise(time+sw,0.12,big?0.20:0.13,1800); }          // Snare
+    if(!intro && big){ for(const gh of gv.ghost) if(gh===ls) mNoise(time+sw,0.06,0.07,2600); }            // Ghost-Snares geben dem Breakbeat Drive
+    if(state===S.PLAY && !intro && ls%((song.hatEvery||gv.hat)*(big?1:2))===0) mNoise(time+sw,0.025,big?0.06:0.04,8000); // Hats (geswingt)
     // ---- Sparkle-Arp-Schicht NUR in Drop/Chorus (Verse/Bridge bleiben für die Melodie frei) ----
     if(state===S.PLAY && big){ const ch=song.chords[block], V=loopCount;
       const dens=[2,2,4,2][V%4];
@@ -938,10 +1037,11 @@
   const PMAX=320; let pHead=0, pAlive=0;
   function initParticlePool(){ particles=[]; for(let i=0;i<PMAX;i++) particles.push({x:0,y:0,vx:0,vy:0,life:0,decay:0,color:'#fff',size:0}); pHead=0; }
   initParticlePool();   // einmalig: Pool fuellen, danach nie wieder neu allokieren
-  function emitP(x,y,vx,vy,decay,color,size){ const p=particles[pHead]; pHead=(pHead+1)%PMAX;
+  function emitP(x,y,vx,vy,decay,color,size){ if(fxQ<0.85 && Math.random()>=fxQ) return;   // zentrale Dichte-Bremse: bei Lag einen Teil (1-fxQ) ALLER Partikel weglassen (auch direkte emitP-Aufrufe in Waffen/Effekten)
+    const p=particles[pHead]; pHead=(pHead+1)%PMAX;
     p.x=x;p.y=y;p.vx=vx;p.vy=vy;p.life=1;p.decay=decay;p.color=color;p.size=size; }
   function clearParticles(){ for(let i=0;i<particles.length;i++) particles[i].life=0; pHead=0; }
-  function spawnParticles(x,y,color,n,spd){ n=Math.max(1,Math.round(n*fxQ)); for(let i=0;i<n;i++){const a=Math.random()*6.28,s=rand(spd*0.3,spd);   // fxQ: bei Lag weniger Partikel erzeugen
+  function spawnParticles(x,y,color,n,spd){ n=Math.max(1,Math.round(n)); for(let i=0;i<n;i++){const a=Math.random()*6.28,s=rand(spd*0.3,spd);   // Dichte-Drosselung zentral in emitP (greift auch für direkte Emitter)
     emitP(x,y,Math.cos(a)*s,Math.sin(a)*s,rand(0.012,0.03),color,rand(2,5));} }
   function floatText(x,y,text,color,size){ floaters.push({x,y,text,color:color||'#fff',size:size||16,life:1,vy:-42}); }
   // Einmal-Hinweis fürs Onboarding (pro Schlüssel nur einmal, in meta gemerkt) – nutzt das Banner-System
@@ -1281,7 +1381,7 @@
     comboTime=0; comboTimeMax=3.4; beatIdx=0; beatPulse=0; spawnQueued=false; orbQueued=false;
     director=0.5; overdrive=false; tBlast=0; tMiss=rand(0.3,0.7); tFlame=0; tFrost=0; tChain=rand(0.4,0.8); tNova=rand(0.5,1.0); tRail=rand(0.4,0.9); teslaCount=0; bossPending=false; boss=null; ebullets=[]; gemT=rand(8,13);
     endless=false; madness=0; wonThisRun=false; laserFinal=false;
-    runOrbs=0; runPerfect=0; runBosses=0; madnessTime=0; runMaxMult=1; runSPgain=0; runHits=0; onbDrops=0; runChipsPaid=0; runChipsEarned=0; coinSaveAcc=0; runJumps=0; runLoot=0; inputDirty=false; idleStretch=0; runIdleMax=0; runIdleAcc=0; breatherT=rand(24,32); breatherActive=0; chestT=rand(30,46); mkCount=0; mkTimer=0; coachQueue=[]; coachCd=0; coachCard=null; coachPause=false; pickMissions();
+    runOrbs=0; runPerfect=0; runBosses=0; madnessTime=0; runMaxMult=1; runSPgain=0; runHits=0; onbDrops=0; runChipsPaid=0; runChipsEarned=0; coinSaveAcc=0; runJumps=0; runLoot=0; inputDirty=false; idleStretch=0; runIdleMax=0; runIdleAcc=0; breatherT=rand(24,32); breatherActive=0; chestT=rand(70,100); mkCount=0; mkTimer=0; coachQueue=[]; coachCd=0; coachCard=null; coachPause=false; pickMissions();
     flowI=1; skillBias=computeSkillBias();   // Flow-Regler zuruecksetzen + Skill-Offset aus den letzten Runs lernen
     shipSeed=((daily?dailySeed():(Math.random()*1e9))|0)||1;
   }
@@ -1617,7 +1717,7 @@
     {id:'rate',  kind:'off', r:[4,9],    ap:v=>{ mods.wRate*=1+v/100; }},
     {id:'crit',  kind:'off', r:[3,7],    ap:v=>{ mods.critBase=(mods.critBase||0)+v/100; }},
     {id:'score', kind:'util',r:[5,12],   ap:v=>{ mods.scoreMult*=1+v/100; }},
-    {id:'coin',  kind:'util',r:[8,16],   ap:v=>{ mods.orbValueMult*=1+v/100; }},
+    {id:'coin',  kind:'util',r:[6,10],   ap:v=>{ mods.orbValueMult*=1+v/100; }},
     {id:'magnet',kind:'util',r:[30,80],  ap:v=>{ mods.magnetPassive+=v; }},
     {id:'near',  kind:'util',r:[5,11],   ap:v=>{ mods.nearRadius*=1+v/100; }},
     {id:'hull',  kind:'def', r:[3,6],    ap:v=>{ mods.playerR=Math.max(8,mods.playerR*(1-v/100)); if(player)player.r=mods.playerR; }}   // gedeckelt (Floor 8): keine Hitbox-Runaway
@@ -1839,8 +1939,8 @@
     spawnParticles(s.x,s.y,'#19f0ff',16,240); flash=Math.min(0.5,(flash||0)+0.18); flashColor='#19f0ff'; vibe([12,16]); beep(1600,0.06,'square',0.12,300); updateAllBalances();
     coach('sp'); }   // erster Skillpunkt: Coach zeigt die Werkstatt
   // Boss-Drop: 0–3 Skillpunkte, gewichtet – meist 0/1 (1 ~50%), 2 sehr selten, 3 sehr sehr selten
-  function grantBossSP(x,y){ const r=Math.random(); let n=r<0.41?0:(r<0.91?1:(r<0.985?2:3));
-    if(runBosses<=2 && n<1) n=1;   // verlässlicher Progress-Einstieg: die ersten beiden Bosse geben sicher mind. 1 Skillpunkt
+  function grantBossSP(x,y){ const r=Math.random(); let n=r<0.72?1:(r<0.95?2:3);   // Boss gibt jetzt IMMER ≥1 Skillpunkt (häufiger SP-Quelle = Boss statt Zufall), 2–3 seltener
+    if(runBosses<=2 && n<1) n=1;   // verlässlicher Progress-Einstieg (greift dank Mindestwert 1 ohnehin)
     if(n<=0) return;   // kein Drop
     if(state!==S.PLAY){ skillPts+=n; saveSP(); updateAllBalances(); return; }   // außerhalb des Spiels: direkt gutschreiben (kein Feld)
     for(let i=0;i<n;i++) spawnSP(x+rand(-46,46), y+rand(-12,34));
@@ -1914,7 +2014,7 @@
     dropLoot(W/2,H*0.32,'boss',wasFinal); if(wasFinal) dropLoot(W/2+40,H*0.32,'boss',true);   // garantierte Boss-Beute (Finale: doppelt)
     bossNumber++; runBosses++;
     if(wasFinal){ const chips=Math.round((120+Math.min(bossNumber,15)*8)*diffChip); meta.chips=(meta.chips||0)+chips; saveMeta(); updateMenuChips(); winGame(); }
-    else { floatText(W/2,H*0.4,t('survived')+' +'+bonus,'#2effc0',18); levelUp(); } }   // Welle überstanden → Level geschafft
+    else { floatText(W/2,H*0.4,t('survived')+' +'+bonus,'#2effc0',18); levelUp(); chestT=rand(4,8); } }   // Welle überstanden → Level geschafft · Boss-Belohnung: Truhe erscheint bald im neuen Level
   function spawnLaserWave(){ const mixed=bossNumber>=3, vert=(bossNumber%2===1);
     const room=Math.max(0,5-lasers.length);   // gleichzeitige Wände hart begrenzen → Bild bleibt lesbar (kein Linien-Wirrwarr im Lategame)
     const count=Math.min(room,Math.min(6,1+Math.floor(bossNumber/2)+Math.min(2,Math.floor(pwrSurv()*0.14))));
@@ -2231,7 +2331,7 @@
     coinT-=dt; if(coinT<=0){ if(!bossActive){ if(Math.random()<0.25) spawnCoinGroup(); else spawnCoin(); } coinT=rand(1.1,2.1); }
     // Power-Ups: Drops aus Gegnern (killObstacle) + leichte Grund-Spawn-Uhr, damit auch am Anfang welche kommen
     powerupT-=dt; if(powerupT<=0){ if(powerups.length<2 && !bossActive) spawnPowerup(); powerupT=rand(13,19); }
-    chestT-=dt; if(chestT<=0){ if(!bossActive && (level>=2)) spawnChest(); chestT=rand(40,60); }   // Beute-Truhe: selten, schwebt durchs Feld (Risiko/Belohnung)
+    chestT-=dt; if(chestT<=0){ if(!bossActive && (level>=2)) spawnChest(); chestT=rand(80,115); }   // Beute-Truhe: zufällig jetzt deutlich seltener (Hauptquelle ist der Boss-Kill, s. endBoss)
     // Auto-Fire (sobald eine Waffe ausgerüstet ist)
     // Auto-Fire pro Waffe (touch-freundlich: feuert selbstständig sobald Cooldown bereit, Zielen automatisch)
     if(opt.guns){
@@ -2265,7 +2365,7 @@
       if(o.slow>0){ o.slow-=dt; if(o.slow<=0) o.slowAmt=1; }   // Slow ausgelaufen → Resttempo zurück (ccSat bleibt: Wieder-Einfrieren ist gesättigt)
       if(o.burn>0){ o.burn-=dt; let bd=(o.burnDmg||0); if(syn.thermo&&o.slow>0) bd*=2.6;   // THERMOSCHOCK: brennend+gefroren
         o.hp-=bd*dt;
-        if(Math.random()<0.8) emitP(o.cx+rand(-o.w*0.35,o.w*0.35),o.cy+rand(-4,6),rand(-18,18),-rand(45,100),0.45,Math.random()<0.4?'#ffe24d':'#ff5a1a',rand(3,6));   // aufsteigende Glut
+        if(Math.random()<Math.min(0.5,dt*30)) emitP(o.cx+rand(-o.w*0.35,o.w*0.35),o.cy+rand(-4,6),rand(-18,18),-rand(45,100),0.45,Math.random()<0.4?'#ffe24d':'#ff5a1a',rand(3,6));   // aufsteigende Glut – dezenter + framerate-unabhängig (vorher 0.8/Frame → bei 120Hz doppelt so viel)
         o.burnTick=(o.burnTick||0)+bd*dt; if(o.burnTick>=3){ floatDamage(o.cx+rand(-6,6),o.cy-o.h*0.5,o.burnTick,false); o.burnTick=0; }   // sichtbarer Brennschaden
         if(o.hp<=0){ if(o.burnConsume) addScore(6); killObstacle(o); obstacles.splice(i,1); continue; } }
       if(o.slow>0 && Math.random()<0.3) emitP(o.cx+rand(-o.w*0.4,o.w*0.4),o.cy+rand(-o.h*0.4,o.h*0.4),0,rand(8,26),0.5,'#cdf2ff',rand(2,4));   // Frost-Funkeln
@@ -2391,7 +2491,7 @@
       if(dx*dx+dy*dy<rr*rr){ combo++; setMult(); refillCombo(); director=Math.min(1,director+0.012); runOrbs++;   // Münzen bauen jetzt auch Combo + geben Punkte (Orbs sind dadurch überflüssig)
         addScore(Math.round(8*multiplier));
         const dbl=effects.double>0?2:1;                                  // ×2-Power-up wirkt auch auf Münzen
-        const flat=c.val*(mods.orbValueMult||1);                         // Grundwert ohne Combo
+        const flat=c.val*Math.min(2.4,mods.orbValueMult||1);             // Grundwert ohne Combo · Coin-Mult gedeckelt (2.4×) → kein Late-Game-Coin-Flood durch gestapelte Münz-Affixe
         const amt=Math.max(1,Math.round(flat*coinMult()*dbl));           // coinMult() ist der EINZIGE Combo-Faktor (kein Doppel-Multiplikator mehr → Coin-Flut behoben)
         comboCoinBonus+=Math.max(0,amt-Math.round(flat*dbl));            // nur der Combo-Anteil für die Anzeige am Combo-Ende
         awardCoins(amt,c.x,c.y-14,c.val>=5);
@@ -2541,7 +2641,7 @@
     // Power-Up-Drop: Grundchance, von Glück (mods.powerupRate) skaliert, größere Gegner droppen eher
     if(Math.random() < 0.06*(mods.powerupRate||1)*((o.maxHp||1)>=3?1.8:1)) dropPowerup(o.cx,o.cy);
     // Seltener Skillpunkt-Drop (von Glück skaliert, Panzer droppen leicht eher) → kleines Glücksgefühl
-    if(Math.random() < 0.0012*(mods.powerupRate||1)*((o.maxHp||1)>=3?1.5:1)) grantRandomSP(o.cx,o.cy);   // sichtbarer Skillpunkt-Drop (deutlich seltener)
+    if(Math.random() < 0.0005*(mods.powerupRate||1)*((o.maxHp||1)>=3?1.5:1)) grantRandomSP(o.cx,o.cy);   // Zufalls-Skillpunkt am Gegner: jetzt halbiert – Hauptquelle ist der Boss
     dropLoot(o.cx,o.cy,o.elite?'elite':'normal');   // Beute-Drop (Phase 2): Elites = Hauptquelle, normale Gegner selten
     if(o.burnSpread){ for(const n of obstacles){ if(n===o) continue; const dx=n.cx-o.cx,dy=n.cy-o.cy;  // FLÄCHENBRAND
       if(dx*dx+dy*dy<92*92){ n.burn=Math.max(n.burn||0,1.6); n.burnDmg=Math.max(n.burnDmg||0,(o.burnDmg||0.8)*0.8); n.burnSpread=true; } } } }
@@ -2667,14 +2767,18 @@
     g.addColorStop(0,lift(curBg.top)); g.addColorStop(.55,lift(curBg.mid)); g.addColorStop(1,lift(curBg.bot));
     ctx.fillStyle=g; ctx.fillRect(-40,-40,W+80,H+80);
     // Sterne ZUERST (tiefster Hintergrund) → Synthwave-Sonne liegt eine Ebene davor
+    const starGlow=(fxQ==null||fxQ>0.7);   // PERF: weicher Stern-Schein (teures shadowBlur, ~25×/Frame) nur bei gutem Frame-Budget
     for(const s of stars){ const tw=0.82+0.18*Math.sin(s.tw); ctx.globalAlpha=Math.min(1,(0.32+s.z*0.72)*tw);
       ctx.fillStyle=s.z>0.62?'#e6dcff':'#c3abff';
-      if(s.z>0.74){ ctx.shadowBlur=5*s.z; ctx.shadowColor='#cfc2ff'; ctx.fillRect(s.x,s.y,s.r,s.r); ctx.shadowBlur=0; }
+      if(s.z>0.74 && starGlow){ ctx.shadowBlur=5*s.z; ctx.shadowColor='#cfc2ff'; ctx.fillRect(s.x,s.y,s.r,s.r); ctx.shadowBlur=0; }
       else ctx.fillRect(s.x,s.y,s.r,s.r); } ctx.globalAlpha=1;
     drawGrid();
     if(state===S.MENU) drawMenuShip();   // nur Hauptmenü: aktuelles Schiff zentral vor der Sonne (im Hintergrund hinter dem Menü)
 
     if(state===S.PLAY||state===S.OVER||state===S.UPGRADE||state===S.PAUSE){
+      // PERF/Bloom: additive Objekt-Glows = Füllrate. gK skaliert die Glow-Größe mit dem Frame-Budget,
+      // gGlow schaltet sie unter Last ganz ab (nur Kerne), gFus spart die zweite Fusions-Aura zuerst.
+      const gK=Math.min(1,fxQ), gGlow=fxQ>0.5, gFus=fxQ>0.7;
       // Railgun-Schienen (eigene, kurz aufleuchtend)
       if(player) for(const bm of beams){ const a=Math.max(0,bm.t/0.22); ctx.save(); ctx.globalCompositeOperation='lighter';
         const bc=bm.col||'#fff27a';
@@ -2776,7 +2880,7 @@
         ctx.save(); ctx.translate(o.cx,o.cy); ctx.rotate(o.rot||0);
         const burning=o.burn>0, frozen=o.slow>0, el=elapsed||0;
         const glowCol=burning?(Math.sin(el*34+o.cx)>0?'#ff5a1a':'#ffd24d'):(frozen?'#8fe8ff':o.color);
-        const gr=Math.max(o.w,o.h)*(burning?(1.18+Math.sin(el*30+o.cy)*0.16):(frozen?0.95:0.85));   // brennend: pulsierender Feuerschein
+        const gr=Math.max(o.w,o.h)*(burning?(1.18+Math.sin(el*30+o.cy)*0.16):(frozen?0.95:0.85))*gK;   // brennend: pulsierender Feuerschein · gK: Glow mit Budget skalieren
         ctx.globalCompositeOperation='lighter'; ctx.drawImage(glowSprite(glowCol),-gr,-gr,gr*2,gr*2); ctx.globalCompositeOperation='source-over';
         const oc=(o.hitFlash>0)?'#ffffff':(frozen?'#bdefff':o.color);
         if(o.shape==='ring'){ ctx.strokeStyle=oc; ctx.lineWidth=o.w*0.26; ctx.beginPath(); ctx.arc(0,0,o.w*0.4,0,6.28); ctx.stroke(); }
@@ -2800,15 +2904,15 @@
           ctx.fillStyle=f>0.5?'#7cff2e':(f>0.25?'#ffe600':'#ff3b3b'); ctx.fillRect(bx,by,bw*f,2); }
       }
 
-      // bolzen (neon-laser, skin-farbig) & raketen — Glow via Sprite statt shadowBlur
+      // bolzen (neon-laser, skin-farbig) & raketen — Glow via Sprite statt shadowBlur (gK/gGlow s. oben)
       ctx.globalCompositeOperation='lighter'; ctx.lineCap='round';
       for(const b of bullets){
-        if(b.homing){ const gr=b.r*4.5; ctx.drawImage(glowSprite(b.col2||'#ff8a2e'),b.x-gr,b.y-gr,gr*2,gr*2);
+        if(b.homing){ const gr=b.r*4.5*gK; if(gGlow) ctx.drawImage(glowSprite(b.col2||'#ff8a2e'),b.x-gr,b.y-gr,gr*2,gr*2);
           ctx.fillStyle='#ff6a00'; ctx.beginPath(); ctx.arc(b.x-b.vx*0.012,b.y-b.vy*0.012,b.r*0.8,0,6.28); ctx.fill();
           ctx.fillStyle='#ffd36b'; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,6.28); ctx.fill();
           ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(b.x,b.y,b.r*0.4,0,6.28); ctx.fill(); }
-        else { const gr=b.r*3.4; if(b.col2){ const g2=b.r*5; ctx.drawImage(glowSprite(b.col2),b.x-g2,b.y-g2,g2*2,g2*2); }   // Fusions-Aura in Partnerfarbe
-          ctx.drawImage(glowSprite(b.col||'#19f0ff'),b.x-gr,b.y-gr,gr*2,gr*2);
+        else { const gr=b.r*3.4*gK; if(b.col2 && gFus){ const g2=b.r*5*gK; ctx.drawImage(glowSprite(b.col2),b.x-g2,b.y-g2,g2*2,g2*2); }   // Fusions-Aura nur bei Budget
+          if(gGlow) ctx.drawImage(glowSprite(b.col||'#19f0ff'),b.x-gr,b.y-gr,gr*2,gr*2);
           ctx.strokeStyle=b.col||'#caffff'; ctx.lineWidth=b.r;
           ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x-b.vx*0.022,b.y-b.vy*0.022); ctx.stroke();
           ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(b.x,b.y,b.r*0.5,0,6.28); ctx.fill(); } }
@@ -2818,8 +2922,8 @@
       if(boss) drawBoss();
       if(ebullets.length){
         // Glow (additive drawImage) nur bei moderater Kugelzahl + Budget – bei dichten Mega-Salven sofort weglassen (Fillrate-Schutz, der Governor reagiert zu träge)
-        if(fxQ>0.6 && ebullets.length<=120){ const gs=glowSprite('#ff2e88'); ctx.globalCompositeOperation='lighter';
-          for(const e of ebullets){ const gr=e.r*2.8; ctx.drawImage(gs,e.x-gr,e.y-gr,gr*2,gr*2); }
+        if(gGlow && ebullets.length<=120){ const gs=glowSprite('#ff2e88'); ctx.globalCompositeOperation='lighter';
+          for(const e of ebullets){ const gr=e.r*2.8*gK; ctx.drawImage(gs,e.x-gr,e.y-gr,gr*2,gr*2); }
           ctx.globalCompositeOperation='source-over'; }
         for(const e of ebullets){ ctx.fillStyle='#ff5ea8'; ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,6.28); ctx.fill();
           ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(e.x,e.y,e.r*0.4,0,6.28); ctx.fill(); } }
@@ -2835,8 +2939,10 @@
 
       // particles (additiv -> Funkenregen leuchtet übereinander). Glow via Halo+Kern statt teurem shadowBlur (mobil flüssig)
       ctx.globalCompositeOperation='lighter'; ctx.shadowBlur=0;
-      const pHalo=pAlive<140 && fxQ>0.7;   // Halo nur bei wenigen Partikeln & gutem Frame-Budget; bei Last nur Kern = halbe Füllkosten
-      for(const p of particles){ if(p.life<=0) continue; const a=p.life, s=p.size; ctx.fillStyle=p.color;
+      const pHalo=pAlive<140 && fxQ>0.7 && !_lowfx;   // Halo nur bei wenigen Partikeln & gutem Frame-Budget; bei Last nur Kern = halbe Füllkosten
+      let _pc=null;   // PERF: Burst-Partikel liegen im Ring zusammenhängend & teilen die Farbe → redundante fillStyle-Statewechsel sparen
+      for(const p of particles){ if(p.life<=0) continue; const a=p.life, s=p.size;
+        if(p.color!==_pc){ ctx.fillStyle=_pc=p.color; }
         if(pHalo){ ctx.globalAlpha=a*0.35; ctx.fillRect(p.x-s,p.y-s,s*2,s*2); }     // weicher additiver Halo
         ctx.globalAlpha=a;      ctx.fillRect(p.x-s/2,p.y-s/2,s,s); }               // heller Kern
       ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
@@ -4583,13 +4689,21 @@
   }
   // ---------- Loop ----------
   function loop(now){ let dt=(now-lastT)/1000; lastT=now; if(dt>0.05)dt=0.05;
-    frameMs+=((dt*1000)-frameMs)*0.1;                                                              // geglättete Frame-Zeit (EMA)
+    const inst=dt*1000;                                                                            // rohe Zeit dieses Frames
+    frameMs+=(inst-frameMs)*0.12;                                                                  // geglättete Frame-Zeit (EMA), etwas reaktiver
     // Erkennt die echte Bildwiederholrate selbst: vsyncMs folgt schnell der Untergrenze, driftet nur langsam hoch.
     vsyncMs+=(frameMs-vsyncMs)*(frameMs<vsyncMs?0.25:0.0008); if(vsyncMs<6) vsyncMs=6;
-    // Governor RELATIV zur erkannten Rate (60/90/120/144 Hz gleichermaßen): erst FX-Dichte, dann interne Auflösung
-    // senken, wenn Frames verloren gehen (>1.6× vsync); in Ruhe (<1.25×) umgekehrt wieder anheben.
-    if(frameMs>vsyncMs*1.6){ if(fxQ>0.45) fxQ=Math.max(0.45,fxQ-0.04); else if(qScale>0.5){ qScale=Math.max(0.5,qScale-0.05); applyScale(); } }
-    else if(frameMs<vsyncMs*1.25){ if(qScale<1){ qScale=Math.min(1,qScale+0.04); applyScale(); } else if(fxQ<1) fxQ=Math.min(1,fxQ+0.02); }
+    // Governor: hält die native Rate (60/90/120/144 Hz), garantiert aber eine ABSOLUTE 60-FPS-Untergrenze.
+    // Ziel „nie ruckeln": schnell runter (Einzel-Ruckler sofort hart), langsam wieder hoch und nur mit klarer
+    // Reserve (>~70 FPS) → der Governor reitet nie auf der 60er-Kante und pumpt nicht. Erst FX-Dichte, dann Auflösung.
+    const F60=16.9, spike=inst>28;                                                                 // >16.9ms ≈ <59 FPS · Einzelframe >28ms = Ruckler
+    if(frameMs>vsyncMs*1.6 || frameMs>F60){ const st=spike?0.14:(frameMs>F60?0.06:0.04);
+      if(fxQ>0.4) fxQ=Math.max(0.4,fxQ-st);
+      else if(qScale>0.5){ qScale=Math.max(0.5,qScale-(spike?0.08:0.05)); applyScale(); } }
+    else if(frameMs<vsyncMs*1.25 && frameMs<14.3){ if(qScale<1){ qScale=Math.min(1,qScale+0.03); applyScale(); } else if(fxQ<1) fxQ=Math.min(1,fxQ+0.015); }
+    // CSS-Notbremse direkt an der Framerate (Hysterese): Deko/CRT-Overlay bei <~59 FPS aus, zurück erst >~74 FPS
+    let lf=_lowfx; if(!_lowfx && frameMs>17.0) lf=true; else if(_lowfx && frameMs<13.5) lf=false;
+    if(lf!==_lowfx){ _lowfx=lf; document.body.classList.toggle('lowfx',lf); }
     if(meta.research&&(meta.research.active||(meta.research.queue&&meta.research.queue.length))) drainResearchInstant();   // Alt-Speicherstand mit laufender Forschung → sofort gutschreiben (läuft genau einmal)
     if(state===S.PLAY){ if(coachPause) coachFreezeTick(dt); else update(dt); }
     else { elapsed=(elapsed||0)+dt; updateStars(dt);
