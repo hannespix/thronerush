@@ -4686,15 +4686,20 @@
   }
   // ---------- Loop ----------
   function loop(now){ let dt=(now-lastT)/1000; lastT=now; if(dt>0.05)dt=0.05;
-    frameMs+=((dt*1000)-frameMs)*0.1;                                                              // geglättete Frame-Zeit (EMA)
+    const inst=dt*1000;                                                                            // rohe Zeit dieses Frames
+    frameMs+=(inst-frameMs)*0.12;                                                                  // geglättete Frame-Zeit (EMA), etwas reaktiver
     // Erkennt die echte Bildwiederholrate selbst: vsyncMs folgt schnell der Untergrenze, driftet nur langsam hoch.
     vsyncMs+=(frameMs-vsyncMs)*(frameMs<vsyncMs?0.25:0.0008); if(vsyncMs<6) vsyncMs=6;
-    // Governor RELATIV zur erkannten Rate (60/90/120/144 Hz gleichermaßen): erst FX-Dichte, dann interne Auflösung
-    // senken, wenn Frames verloren gehen (>1.6× vsync); in Ruhe (<1.25×) umgekehrt wieder anheben.
-    if(frameMs>vsyncMs*1.6){ if(fxQ>0.45) fxQ=Math.max(0.45,fxQ-0.04); else if(qScale>0.5){ qScale=Math.max(0.5,qScale-0.05); applyScale(); } }
-    else if(frameMs<vsyncMs*1.25){ if(qScale<1){ qScale=Math.min(1,qScale+0.04); applyScale(); } else if(fxQ<1) fxQ=Math.min(1,fxQ+0.02); }
-    // CSS-Notbremse mit Hysterese: bei anhaltendem Druck dekorative HUD-/CRT-Effekte abschalten (body.lowfx), erst bei klarer Erholung wieder an
-    let lf=_lowfx; if(!_lowfx && fxQ<=0.55) lf=true; else if(_lowfx && fxQ>=0.8) lf=false;
+    // Governor: hält die native Rate (60/90/120/144 Hz), garantiert aber eine ABSOLUTE 60-FPS-Untergrenze.
+    // Ziel „nie ruckeln": schnell runter (Einzel-Ruckler sofort hart), langsam wieder hoch und nur mit klarer
+    // Reserve (>~70 FPS) → der Governor reitet nie auf der 60er-Kante und pumpt nicht. Erst FX-Dichte, dann Auflösung.
+    const F60=16.9, spike=inst>28;                                                                 // >16.9ms ≈ <59 FPS · Einzelframe >28ms = Ruckler
+    if(frameMs>vsyncMs*1.6 || frameMs>F60){ const st=spike?0.14:(frameMs>F60?0.06:0.04);
+      if(fxQ>0.4) fxQ=Math.max(0.4,fxQ-st);
+      else if(qScale>0.5){ qScale=Math.max(0.5,qScale-(spike?0.08:0.05)); applyScale(); } }
+    else if(frameMs<vsyncMs*1.25 && frameMs<14.3){ if(qScale<1){ qScale=Math.min(1,qScale+0.03); applyScale(); } else if(fxQ<1) fxQ=Math.min(1,fxQ+0.015); }
+    // CSS-Notbremse direkt an der Framerate (Hysterese): Deko/CRT-Overlay bei <~59 FPS aus, zurück erst >~74 FPS
+    let lf=_lowfx; if(!_lowfx && frameMs>17.0) lf=true; else if(_lowfx && frameMs<13.5) lf=false;
     if(lf!==_lowfx){ _lowfx=lf; document.body.classList.toggle('lowfx',lf); }
     if(meta.research&&(meta.research.active||(meta.research.queue&&meta.research.queue.length))) drainResearchInstant();   // Alt-Speicherstand mit laufender Forschung → sofort gutschreiben (läuft genau einmal)
     if(state===S.PLAY){ if(coachPause) coachFreezeTick(dt); else update(dt); }
