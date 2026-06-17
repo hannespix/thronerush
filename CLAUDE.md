@@ -45,7 +45,7 @@ Eine IIFE mit gemeinsamem Scope. Grobe Reihenfolge im Code:
 
 | Aufgabe | Stelle |
 |---|---|
-| Neue Musik / Song anpassen | `SONGS`-Array + Lead-Arrays (`LEAD1`, `LEADB1`, …) |
+| Neue Musik / Song anpassen | `SONGS`-Array (je Song `leads:[…]` mit 3 Phrasen + `groove`/`bassPat`/`staccato`/`leadEcho`/`leadOct`) + Lead-Arrays (`LEAD1`, `LEADB1`, …). Schlagzeug-Pattern (Kick/Snare/Hat/Swing) in `GROOVES`. |
 | Schwierigkeit / Tempo | `spawnObstacle()` (Formel `sp`), `update()` (`difficulty`, Spawn-Interval) |
 | **Auto-Balance** | `BAL`-Block (oben in `game.js`, Marker `=== AUTO-BALANCE ===`): Knöpfe `difficulty`/`spawnRate`/`eliteChance`, die der tägliche Director (`tools/auto-balance.mjs`) Telemetrie-gesteuert setzt. **Block-Inhalt nicht von Hand pflegen** – Doku: `tuning/README.md`. Neue Mechanik → ggf. Knopf + KPI ergänzen. |
 | Endgame-Druck (DDA) | `ddaPush()`/`difSpd()`/`difDen()` – Zusatzdruck nur bei hohem `director` (souveränes Spiel), Grund-Cap schützt schwache Spieler |

@@ -669,15 +669,96 @@
     {s:32,n:72,d:4},{s:36,n:76,d:4},{s:40,n:79,d:6},{s:46,n:77,d:2},
     {s:48,n:76,d:6},{s:54,n:72,d:4},{s:58,n:71,d:6}
   ];
+  // ---- 3. Phrasen (B-Teile) je Song → ein Song bleibt länger frisch, bevor er sich wiederholt ----
+  const LEAD3=[ // PROLOG (C-Dur), hellerer Gegenteil
+    {s:0,n:79,d:2},{s:2,n:81,d:2},{s:4,n:83,d:2},{s:6,n:84,d:2},{s:8,n:83,d:1},{s:9,n:81,d:1},{s:10,n:79,d:2},{s:12,n:76,d:4},
+    {s:16,n:77,d:2},{s:18,n:79,d:2},{s:20,n:81,d:2},{s:22,n:79,d:1},{s:23,n:77,d:1},{s:24,n:76,d:2},{s:26,n:72,d:2},{s:28,n:74,d:4},
+    {s:32,n:72,d:2},{s:34,n:76,d:2},{s:36,n:79,d:2},{s:38,n:84,d:2},{s:40,n:83,d:1},{s:41,n:79,d:1},{s:42,n:76,d:2},{s:44,n:72,d:4},
+    {s:48,n:74,d:2},{s:50,n:77,d:2},{s:52,n:79,d:2},{s:54,n:77,d:1},{s:55,n:74,d:1},{s:56,n:72,d:2},{s:58,n:71,d:2},{s:60,n:72,d:4}
+  ];
+  const LEADB3=[ // NACHTFAHRT (d-moll)
+    {s:0,n:74,d:2},{s:2,n:77,d:2},{s:4,n:79,d:2},{s:6,n:77,d:1},{s:7,n:76,d:1},{s:8,n:74,d:2},{s:10,n:72,d:2},{s:12,n:70,d:4},
+    {s:16,n:72,d:2},{s:18,n:74,d:2},{s:20,n:77,d:2},{s:22,n:81,d:2},{s:24,n:79,d:1},{s:25,n:77,d:1},{s:26,n:74,d:2},{s:28,n:72,d:4},
+    {s:32,n:69,d:2},{s:34,n:74,d:2},{s:36,n:77,d:2},{s:38,n:79,d:2},{s:40,n:77,d:1},{s:41,n:74,d:1},{s:42,n:72,d:2},{s:44,n:69,d:4},
+    {s:48,n:70,d:2},{s:50,n:74,d:2},{s:52,n:77,d:2},{s:54,n:74,d:1},{s:55,n:72,d:1},{s:56,n:70,d:2},{s:58,n:69,d:2},{s:60,n:74,d:4}
+  ];
+  const LEADC3=[ // ÜBERTAKTET (A-Dur, hektisch)
+    {s:0,n:81,d:1},{s:1,n:78,d:1},{s:2,n:76,d:2},{s:4,n:73,d:1},{s:5,n:76,d:1},{s:6,n:81,d:2},{s:8,n:85,d:1},{s:9,n:81,d:1},{s:10,n:78,d:2},{s:12,n:76,d:4},
+    {s:16,n:78,d:1},{s:17,n:81,d:1},{s:18,n:85,d:2},{s:20,n:88,d:2},{s:22,n:85,d:1},{s:23,n:81,d:1},{s:24,n:78,d:2},{s:26,n:73,d:2},{s:28,n:76,d:4},
+    {s:32,n:73,d:1},{s:33,n:76,d:1},{s:34,n:78,d:2},{s:36,n:81,d:1},{s:37,n:85,d:1},{s:38,n:88,d:2},{s:40,n:85,d:1},{s:41,n:81,d:1},{s:42,n:78,d:2},{s:44,n:76,d:4},
+    {s:48,n:80,d:1},{s:49,n:78,d:1},{s:50,n:76,d:2},{s:52,n:73,d:2},{s:54,n:69,d:2},{s:56,n:73,d:1},{s:57,n:76,d:1},{s:58,n:81,d:2},{s:60,n:81,d:4}
+  ];
+  const LEADD3=[ // STRATOSPHÄRE (G-Dur, hell)
+    {s:0,n:79,d:2},{s:2,n:83,d:2},{s:4,n:86,d:2},{s:6,n:83,d:1},{s:7,n:81,d:1},{s:8,n:79,d:2},{s:10,n:76,d:2},{s:12,n:74,d:4},
+    {s:16,n:76,d:2},{s:18,n:79,d:2},{s:20,n:83,d:2},{s:22,n:81,d:1},{s:23,n:79,d:1},{s:24,n:78,d:2},{s:26,n:74,d:2},{s:28,n:71,d:4},
+    {s:32,n:74,d:2},{s:34,n:78,d:2},{s:36,n:81,d:2},{s:38,n:86,d:2},{s:40,n:83,d:1},{s:41,n:79,d:1},{s:42,n:76,d:2},{s:44,n:74,d:4},
+    {s:48,n:71,d:2},{s:50,n:74,d:2},{s:52,n:79,d:2},{s:54,n:76,d:1},{s:55,n:74,d:1},{s:56,n:72,d:2},{s:58,n:74,d:2},{s:60,n:79,d:4}
+  ];
+  const LEADE3=[ // ARKADE (a-moll, eingängig)
+    {s:0,n:81,d:2},{s:2,n:79,d:1},{s:3,n:77,d:1},{s:4,n:76,d:2},{s:6,n:74,d:2},{s:8,n:72,d:1},{s:9,n:74,d:1},{s:10,n:76,d:2},{s:12,n:69,d:4},
+    {s:16,n:76,d:2},{s:18,n:77,d:1},{s:19,n:79,d:1},{s:20,n:81,d:2},{s:22,n:84,d:2},{s:24,n:83,d:1},{s:25,n:81,d:1},{s:26,n:79,d:2},{s:28,n:76,d:4},
+    {s:32,n:74,d:2},{s:34,n:77,d:2},{s:36,n:81,d:2},{s:38,n:79,d:1},{s:39,n:77,d:1},{s:40,n:76,d:2},{s:42,n:72,d:2},{s:44,n:69,d:4},
+    {s:48,n:72,d:2},{s:50,n:76,d:2},{s:52,n:79,d:2},{s:54,n:81,d:2},{s:56,n:79,d:1},{s:57,n:76,d:1},{s:58,n:74,d:2},{s:60,n:69,d:4}
+  ];
+  // Lead F – TIEFENRAUSCH (d-moll, dunkel/dubby, Half-Time): tiefe, langsame Melodie mit viel Raum
+  const LEADF1=[
+    {s:0,n:62,d:4},{s:4,n:65,d:2},{s:6,n:69,d:2},{s:8,n:67,d:2},{s:10,n:65,d:2},{s:12,n:62,d:4},
+    {s:16,n:60,d:4},{s:20,n:65,d:2},{s:22,n:69,d:2},{s:24,n:70,d:2},{s:26,n:69,d:2},{s:28,n:65,d:4},
+    {s:32,n:62,d:2},{s:34,n:69,d:2},{s:36,n:74,d:2},{s:38,n:72,d:2},{s:40,n:70,d:2},{s:42,n:69,d:2},{s:44,n:65,d:4},
+    {s:48,n:67,d:2},{s:50,n:65,d:2},{s:52,n:62,d:2},{s:54,n:60,d:2},{s:56,n:62,d:4},{s:60,n:57,d:4}
+  ];
+  const LEADF2=[
+    {s:0,n:74,d:2},{s:2,n:77,d:2},{s:4,n:81,d:2},{s:6,n:77,d:2},{s:8,n:74,d:2},{s:10,n:72,d:2},{s:12,n:70,d:4},
+    {s:16,n:72,d:2},{s:18,n:74,d:2},{s:20,n:77,d:2},{s:22,n:81,d:2},{s:24,n:82,d:2},{s:26,n:81,d:1},{s:27,n:77,d:1},{s:28,n:74,d:4},
+    {s:32,n:70,d:2},{s:34,n:74,d:2},{s:36,n:77,d:2},{s:38,n:81,d:2},{s:40,n:77,d:1},{s:41,n:74,d:1},{s:42,n:72,d:2},{s:44,n:69,d:4},
+    {s:48,n:70,d:2},{s:50,n:74,d:2},{s:52,n:77,d:2},{s:54,n:74,d:1},{s:55,n:70,d:1},{s:56,n:69,d:2},{s:58,n:67,d:2},{s:60,n:62,d:4}
+  ];
+  const LEADF3=[
+    {s:0,n:69,d:2},{s:2,n:72,d:2},{s:4,n:74,d:2},{s:6,n:77,d:2},{s:8,n:74,d:1},{s:9,n:72,d:1},{s:10,n:70,d:2},{s:12,n:69,d:4},
+    {s:16,n:65,d:2},{s:18,n:69,d:2},{s:20,n:74,d:2},{s:22,n:72,d:2},{s:24,n:70,d:2},{s:26,n:69,d:2},{s:28,n:67,d:4},
+    {s:32,n:74,d:2},{s:34,n:77,d:2},{s:36,n:81,d:2},{s:38,n:79,d:1},{s:39,n:77,d:1},{s:40,n:74,d:2},{s:42,n:70,d:2},{s:44,n:69,d:4},
+    {s:48,n:72,d:2},{s:50,n:70,d:2},{s:52,n:74,d:2},{s:54,n:72,d:1},{s:55,n:69,d:1},{s:56,n:67,d:2},{s:58,n:65,d:2},{s:60,n:62,d:4}
+  ];
+  // Lead G – HYPERLOOP (e-moll, schnell/energetisch, Breakbeat): treibende 16tel-Hooks
+  const LEADG1=[
+    {s:0,n:76,d:2},{s:2,n:79,d:2},{s:4,n:83,d:1},{s:5,n:81,d:1},{s:6,n:79,d:2},{s:8,n:76,d:2},{s:10,n:74,d:2},{s:12,n:71,d:4},
+    {s:16,n:74,d:2},{s:18,n:76,d:2},{s:20,n:79,d:2},{s:22,n:83,d:1},{s:23,n:81,d:1},{s:24,n:79,d:2},{s:26,n:76,d:2},{s:28,n:72,d:4},
+    {s:32,n:71,d:2},{s:34,n:74,d:2},{s:36,n:79,d:2},{s:38,n:83,d:2},{s:40,n:81,d:1},{s:41,n:79,d:1},{s:42,n:76,d:2},{s:44,n:71,d:4},
+    {s:48,n:72,d:2},{s:50,n:76,d:2},{s:52,n:79,d:2},{s:54,n:76,d:1},{s:55,n:74,d:1},{s:56,n:72,d:2},{s:58,n:71,d:2},{s:60,n:76,d:4}
+  ];
+  const LEADG2=[
+    {s:0,n:83,d:2},{s:2,n:86,d:2},{s:4,n:88,d:2},{s:6,n:86,d:1},{s:7,n:83,d:1},{s:8,n:81,d:2},{s:10,n:79,d:2},{s:12,n:76,d:4},
+    {s:16,n:79,d:2},{s:18,n:83,d:2},{s:20,n:86,d:2},{s:22,n:88,d:2},{s:24,n:86,d:1},{s:25,n:83,d:1},{s:26,n:79,d:2},{s:28,n:76,d:4},
+    {s:32,n:78,d:2},{s:34,n:81,d:2},{s:36,n:84,d:2},{s:38,n:88,d:2},{s:40,n:86,d:1},{s:41,n:83,d:1},{s:42,n:79,d:2},{s:44,n:76,d:4},
+    {s:48,n:79,d:2},{s:50,n:83,d:2},{s:52,n:86,d:2},{s:54,n:83,d:1},{s:55,n:79,d:1},{s:56,n:76,d:2},{s:58,n:74,d:2},{s:60,n:71,d:4}
+  ];
+  const LEADG3=[
+    {s:0,n:79,d:1},{s:1,n:81,d:1},{s:2,n:83,d:2},{s:4,n:81,d:1},{s:5,n:79,d:1},{s:6,n:76,d:2},{s:8,n:74,d:1},{s:9,n:76,d:1},{s:10,n:79,d:2},{s:12,n:71,d:4},
+    {s:16,n:76,d:2},{s:18,n:79,d:2},{s:20,n:81,d:2},{s:22,n:83,d:2},{s:24,n:84,d:1},{s:25,n:83,d:1},{s:26,n:81,d:2},{s:28,n:79,d:4},
+    {s:32,n:76,d:2},{s:34,n:79,d:2},{s:36,n:83,d:2},{s:38,n:81,d:1},{s:39,n:79,d:1},{s:40,n:76,d:2},{s:42,n:74,d:2},{s:44,n:71,d:4},
+    {s:48,n:74,d:2},{s:50,n:79,d:2},{s:52,n:83,d:2},{s:54,n:81,d:1},{s:55,n:76,d:1},{s:56,n:74,d:2},{s:58,n:72,d:2},{s:60,n:76,d:4}
+  ];
+  // ---- Groove-Identität pro Song: eigenes Schlagzeug-Pattern (Kick/Snare/Hat-Steps, Ghost-Snares, Swing) → jeder Song fühlt sich anders an ----
+  const GROOVES={
+    four:    {kick:[0,4,8,12], snare:[4,12], hat:2, ghost:[]},          // klassischer Four-on-the-floor
+    driving: {kick:[0,8],      snare:[4,12], hat:2, ghost:[]},          // treibender Backbeat (bisheriges Standard-Gefühl)
+    half:    {kick:[0,10],     snare:[8],    hat:4, ghost:[]},          // Half-Time: spärlich, viel Raum, dubby
+    break:   {kick:[0,3,10],   snare:[4,12], hat:2, ghost:[7,14]},      // Breakbeat: synkopiert + Ghost-Snares
+    electro: {kick:[0,6,10],   snare:[4,12], hat:2, ghost:[]},          // Electro-Funk: verschobene Kicks
+    shuffle: {kick:[0,8],      snare:[4,12], hat:2, ghost:[], swing:0.2} // Shuffle: geswingte Offbeats
+  };
+  // Songs: leads[] = 3 Phrasen (rotieren über Loops). groove/bassPat/staccato/leadEcho/leadOct = eigener Klang-Charakter.
   const SONGS=[
-    {name:'PROLOG',     lead1:LEAD1,  lead2:LEAD2,  bass:[36,43,45,36], chords:[[60,64,67],[55,59,62],[57,60,64],[60,64,67]], lt:'p50', leadVol:0.17, bassEighths:false, fourFloor:false, hatEvery:2},
-    {name:'NACHTFAHRT', lead1:LEADB1, lead2:LEADB2, bass:[38,43,45,43], chords:[[62,65,69],[58,62,67],[57,60,64],[58,62,67]], lt:'p25', leadVol:0.13, bassEighths:true,  fourFloor:false, hatEvery:4},
-    {name:'ÜBERTAKTET', lead1:LEADC1, lead2:LEADC2, bass:[45,40,42,38], chords:[[57,61,64],[52,56,59],[54,57,61],[50,54,57]], lt:'p12', leadVol:0.15, bassEighths:false, fourFloor:true,  hatEvery:1},
-    {name:'STRATOSPHÄRE',lead1:LEADD1, lead2:LEADD2, bass:[43,38,40,36], chords:[[55,59,62],[50,54,57],[52,55,59],[48,52,55]], lt:'p25', leadVol:0.13, bassEighths:true,  fourFloor:false, hatEvery:2},
-    {name:'ARKADE',     lead1:LEADE1, lead2:LEADE2, bass:[45,43,41,43], chords:[[57,60,64],[55,59,62],[53,57,60],[55,59,62]], lt:'p25', leadVol:0.15, bassEighths:true,  fourFloor:true,  hatEvery:2}
+    {name:'PROLOG',      leads:[LEAD1, LEAD2, LEAD3],   bass:[36,43,45,36], chords:[[60,64,67],[55,59,62],[57,60,64],[60,64,67]], lt:'p50', leadVol:0.17, groove:'four',    bassPat:'quarter', staccato:0.96, leadEcho:0.32},
+    {name:'NACHTFAHRT',  leads:[LEADB1,LEADB2,LEADB3],  bass:[38,43,45,43], chords:[[62,65,69],[58,62,67],[57,60,64],[58,62,67]], lt:'p25', leadVol:0.13, groove:'driving', bassPat:'octave',  staccato:0.90, leadEcho:0.44, hatEvery:4},
+    {name:'ÜBERTAKTET',  leads:[LEADC1,LEADC2,LEADC3],  bass:[45,40,42,38], chords:[[57,61,64],[52,56,59],[54,57,61],[50,54,57]], lt:'p12', leadVol:0.15, groove:'break',   bassPat:'offbeat', staccato:0.62, leadEcho:0.20, hatEvery:1},
+    {name:'STRATOSPHÄRE',leads:[LEADD1,LEADD2,LEADD3],  bass:[43,38,40,36], chords:[[55,59,62],[50,54,57],[52,55,59],[48,52,55]], lt:'p25', leadVol:0.13, groove:'electro', bassPat:'eighth',  staccato:0.95, leadEcho:0.36},
+    {name:'ARKADE',      leads:[LEADE1,LEADE2,LEADE3],  bass:[45,43,41,43], chords:[[57,60,64],[55,59,62],[53,57,60],[55,59,62]], lt:'p25', leadVol:0.15, groove:'shuffle', bassPat:'walk',    staccato:0.80, leadEcho:0.30},
+    {name:'TIEFENRAUSCH',leads:[LEADF1,LEADF2,LEADF3],  bass:[38,34,41,36], chords:[[62,65,69],[58,62,65],[57,60,64],[60,64,67]], lt:'p25', leadVol:0.13, groove:'half',    bassPat:'octave',  staccato:0.92, leadEcho:0.46, leadOct:-12, hatEvery:4},
+    {name:'HYPERLOOP',   leads:[LEADG1,LEADG2,LEADG3],  bass:[40,36,43,38], chords:[[64,67,71],[60,64,67],[55,59,62],[62,66,69]], lt:'p12', leadVol:0.15, groove:'break',   bassPat:'eighth',  staccato:0.68, leadEcho:0.24, hatEvery:1}
   ];
   // Eigener, entspannter Menü-Track (rotiert NICHT mit den Level-Songs)
-  const MENU_SONG={name:'NEON CHILL', lead1:LEADM1, lead2:LEADM2, bass:[36,45,41,43],
+  const MENU_SONG={name:'NEON CHILL', leads:[LEADM1,LEADM2], bass:[36,45,41,43],
     chords:[[60,64,67,71],[57,60,64,67],[53,57,60,64],[55,59,62,65]], lt:'triangle', leadVol:0.135, chill:true};
   let curSong=0, pendingSong=-1;   // pendingSong: gewählter Folge-Song, wird erst an einer ruhigen Stelle (Intro/Verse) eingeblendet → schleichend
   // ---- Game-Boy-Pulswellen (Tastverhältnis) ----
@@ -779,16 +860,20 @@
     const block=Math.floor(step/16), ls=step%16;
     // ---- SONGFORM: echtes Arrangement statt 2-Phrasen-Loop (Intro→Verse→Chorus→Bridge→Chorus über 8 Loops) ----
     const sec=song.chill?{p:(loopCount%2)+1,m:'chill'}:FORM[loopCount%FORM.length];
-    const lead=sec.p===2?song.lead2:song.lead1;
+    const leads=song.leads||[song.lead1,song.lead2];
+    let pi=(sec.p-1)%leads.length;                                            // p=1→Phrase A, p=2→Phrase B
+    if(leads.length>1) pi=(pi+Math.floor(loopCount/FORM.length))%leads.length; // weitere Phrasen rotieren über die Loops rein → länger frisch
+    const lead=leads[pi]||leads[0];
     const m=sec.m;
     const intro=m==='intro', verse=m==='verse', build=m==='build', drop=m==='drop', chorus=m==='chorus', bridge=m==='bridge';
     const big=drop||chorus;                           // volle Energie (Drop/Chorus)
     const kt=bridge?5:0;                              // Bridge: Melodie + Harmonie eine Quarte hoch = klar neues Songteil
     const root=song.bass[block]+kt;
     // ---- LEAD = Hauptmelodie klar VORN. Verse am lautesten; im Build läuft sie sanft aus (kein harter Schnitt → fließt) ----
+    const lo=song.leadOct||0, stac=song.staccato||0.94, lecho=(song.leadEcho!=null?song.leadEcho:echo);   // Artikulation/Hall pro Song = eigener Lead-Charakter
     if(!build || step<32){ const lvol=build?lv*0.7*(1-step/32):(verse?lv*1.32:(big?lv*1.14:(intro?lv*0.82:lv)));
-      for(const e of lead) if(e.s===step){ mLead(time,midiF(e.n+kt),e.d*secPerStep*0.94,song.lt,lvol,echo);
-        if(big && e.d>=2) mVoice(time,midiF(e.n+kt+12),e.d*secPerStep*0.6,'p50',lv*0.3,0.012); } }   // Drop/Chorus: Oktav-Harmonie drauf
+      for(const e of lead) if(e.s===step){ mLead(time,midiF(e.n+kt+lo),e.d*secPerStep*stac,song.lt,lvol,lecho);
+        if(big && e.d>=2) mVoice(time,midiF(e.n+kt+lo+12),e.d*secPerStep*0.6,'p50',lv*0.3,0.012); } }   // Drop/Chorus: Oktav-Harmonie drauf
     if(song.chill){
       if(ls===0||ls===8) mVoice(time,midiF(root),secPerStep*5,'triangle',0.20,0.012);                 // weicher, ruhiger Bass
       if(ls===0){ for(const cn of song.chords[block]) mVoice(time,midiF(cn+12),secPerStep*15,'sine',0.03,0.06); } // sanfter Pad-Akkord
@@ -807,9 +892,15 @@
         const sc=song.chords[block]; mVoice(time,midiF(sc[(step/2)%sc.length]+12+(step>=48?12:0)),secPerStep*0.4,'p25',0.035,0.002); } // aufsteigender Chip-Riser
       return;
     }
-    // ---- BASS (Drop/Chorus: NES-Oktav-Bounce · Intro sparsam) ----
-    if(song.bassEighths && !intro){ if(ls%2===0) mVoice(time,midiF(root+((big&&ls%4===2)?12:0)),secPerStep*1.5,'triangle',big?0.30:0.24,0.004); } // treibender Achtel-Bass
-    else { if(ls%4===0) mVoice(time,midiF(root),secPerStep*2,'triangle',big?0.33:(intro?0.2:0.27),0.004); else if(ls%4===2 && !intro) mVoice(time,midiF(root+7),secPerStep*1.4,'triangle',0.15); }
+    // ---- BASS: eigene Figur pro Song (bassPat) · Intro immer sparsam ----
+    if(intro){ if(ls%4===0) mVoice(time,midiF(root),secPerStep*2,'triangle',0.2,0.004); }
+    else{ const bp=song.bassPat||'quarter';
+      if(bp==='eighth'){ if(ls%2===0) mVoice(time,midiF(root+((big&&ls%4===2)?12:0)),secPerStep*1.5,'triangle',big?0.30:0.24,0.004); }            // treibender Achtel-Bass
+      else if(bp==='octave'){ if(ls%4===0) mVoice(time,midiF(root),secPerStep*1.4,'triangle',big?0.32:0.26,0.004); else if(ls%4===2) mVoice(time,midiF(root+12),secPerStep*1.2,'triangle',big?0.22:0.16,0.004); } // NES-Oktav-Bounce
+      else if(bp==='offbeat'){ if(ls%4===0) mVoice(time,midiF(root),secPerStep*1.2,'triangle',big?0.30:0.24,0.004); if(ls%4===2) mVoice(time,midiF(root+12),secPerStep*0.8,'triangle',0.18,0.004); } // Eins + Offbeat-Stups
+      else if(bp==='walk'){ const wk=[root,root+7,root+12,root+7]; if(ls%2===0) mVoice(time,midiF(wk[(ls/2)%4]),secPerStep*1.3,'triangle',big?0.28:0.22,0.004); } // laufender Bass durch die Akkordtöne
+      else { if(ls%4===0) mVoice(time,midiF(root),secPerStep*2,'triangle',big?0.33:0.27,0.004); else if(ls%4===2) mVoice(time,midiF(root+7),secPerStep*1.4,'triangle',0.15); } // quarter
+    }
     // ---- DROP = Impact mit Wucht: Crash + Powerchord + EIN kurzer Wob + aufsteigende Arcade-Laser-Fanfare (weniger wawa!) ----
     if(drop && ls===0){ mNoise(time,0.32,0.11,2400); mWobble(time,midiF(root-12),secPerStep*5);             // dezenter Crash + EIN Wob
       for(let z=0;z<4;z++) mLaser(time+z*secPerStep*0.5,midiF(root+12+[0,4,7,12][z]),secPerStep*0.55,true,0.04); } // Laser-Fanfare hoch (dezenter)
@@ -823,11 +914,14 @@
       if(big && ls%2===0) mVoice(time,midiF(ch[(step+2)%ch.length]+24+kt),secPerStep*0.3,'p12',0.05,0.001);      // 2. Oktave = breiter Chip-Sound
       if(big && ls%4===2){ for(const cn of ch) mVoice(time,midiF(cn+12+kt),secPerStep*0.5,'p25',0.03,0.002); }   // punchy Chip-Stab auf dem Backbeat
       if(big && (ls===14||ls===15)){ mVoice(time,midiF(ch[(step%2?0:2)%ch.length]+24+kt),secPerStep*0.22,'p12',0.05,0.001); } } // 16tel-Trill am Taktende = durchgedreht
-    // ---- DRUMS: Intro = nur Eins · Drop/Chorus = Four-on-the-floor + fette Snare · Verse/Bridge = sparsam ----
-    if(intro){ if(ls===0) mKick(time); }
-    else if(big){ if(ls%4===0) mKick(time); } else { if(ls===0||ls===8) mKick(time); }
-    if((ls===4||ls===12) && !intro) mNoise(time,0.12,big?0.20:0.13,1800);                               // Snare
-    if(state===S.PLAY && !intro && ls%((song.hatEvery||2)*(big?1:2))===0) mNoise(time,0.025,big?0.06:0.04,8000); // Hats
+    // ---- DRUMS: Groove-Pattern des Songs (Intro = nur Eins · Drop/Chorus treibt voll · Half-Time behält Charakter) ----
+    const gv=GROOVES[song.groove]||GROOVES.four;
+    const sw=(gv.swing&&ls%4===2)?gv.swing*secPerStep:0;                                                 // Shuffle: Offbeats leicht verzögert
+    const kicks=intro?[0]:(big&&song.groove!=='half')?[0,4,8,12]:gv.kick;                                // Drop/Chorus = Four-on-the-floor (außer Half-Time)
+    if(kicks.indexOf(ls)>=0) mKick(time+sw);
+    if(!intro){ for(const sn of gv.snare) if(sn===ls) mNoise(time+sw,0.12,big?0.20:0.13,1800); }          // Snare
+    if(!intro && big){ for(const gh of gv.ghost) if(gh===ls) mNoise(time+sw,0.06,0.07,2600); }            // Ghost-Snares geben dem Breakbeat Drive
+    if(state===S.PLAY && !intro && ls%((song.hatEvery||gv.hat)*(big?1:2))===0) mNoise(time+sw,0.025,big?0.06:0.04,8000); // Hats (geswingt)
     // ---- Sparkle-Arp-Schicht NUR in Drop/Chorus (Verse/Bridge bleiben für die Melodie frei) ----
     if(state===S.PLAY && big){ const ch=song.chords[block], V=loopCount;
       const dens=[2,2,4,2][V%4];
